@@ -1,0 +1,43 @@
+{
+  "works": [
+    {
+      "id": "don_giovanni_champagne",
+      "title": "Fin ch’han dal vino (Champagne Aria)",
+      "composer": "Mozart",
+      "aliases": [
+        "champagne aria",
+        "fin ch'han dal vino",
+        "don giovanni champagne",
+        "Don Giovanni Fin ch'han dal vino"
+      ],
+      "videos": [
+        { "yt": "FXtPyvzNn7o" },
+        { "yt": "KFHyyVcsRQA" },
+        { "yt": "G_50t1WonhU" },
+        { "yt": "5JLpU9sqdiw" },
+        { "yt": "CMJkY8V0BUU" },
+        { "yt": "FcwiOvKnotg" },
+        { "yt": "w1xX7bwQgDU" }
+      ]
+    },
+    {
+      "id": "traviata_sempre_libera",
+      "title": "Sempre libera",
+      "composer": "Verdi",
+      "aliases": [
+        "sempre libera",
+        "la traviata sempre libera",
+        "Verdi Sempre libera"
+      ],
+      "videos": [
+        { "yt": "IGlugsYQZgg" },
+        { "yt": "jKYMHyy-rmg" },
+        { "yt": "CSen0SwhlfQ" },
+        { "yt": "5ExLMH4FW2A" },
+        { "yt": "Qqe9H85AILc" },
+        { "yt": "TWkJ2vPZud4" },
+        { "yt": "sRKDapRPjyo" }
+      ]
+    }
+  ]
+}
