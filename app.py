@@ -142,10 +142,10 @@ def set_random_work():
 if mode == "Random aria":
     b1, b2 = st.columns([1, 1])
     with b1:
-        if st.button("🎲 New random aria", use_container_width=True):
+        if st.button("🎲 New random aria", width="stretch"):
             set_random_work()
     with b2:
-        if st.button("🔀 Reshuffle versions", use_container_width=True):
+        if st.button("🔀 Reshuffle versions", width="stretch"):
             st.session_state.shuffle_seed += 1
             st.session_state.now_playing = None
 
@@ -192,7 +192,7 @@ st.write("Listen without knowing who is singing. Reveal only after listening.")
 st.caption(f"{len(versions)} version(s) available for this aria in your catalog.")
 
 # Playback stop
-if st.button("⏹ Stop playback", use_container_width=True):
+if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
 
 st.divider()
@@ -207,11 +207,19 @@ for idx, v in enumerate(versions, start=1):
 
     c1, c2 = st.columns([1, 1])
     with c1:
-        if st.button("🎧 Listen", key=f"listen_{current['id']}_{idx}", use_container_width=True):
+        if st.button(
+            "🎧 Listen",
+            key=f"listen_{current['id']}_{idx}",
+            width="stretch",
+        ):
             st.session_state.now_playing = vid
 
     with c2:
-        if st.button("⏹ Stop", key=f"stop_{current['id']}_{idx}", use_container_width=True):
+        if st.button(
+            "⏹ Stop",
+            key=f"stop_{current['id']}_{idx}",
+            width="stretch",
+        ):
             if st.session_state.now_playing == vid:
                 st.session_state.now_playing = None
 
@@ -224,9 +232,10 @@ for idx, v in enumerate(versions, start=1):
         if meta:
             st.markdown(f"**Title:** {meta.get('title', '—')}")
             st.markdown(f"**Channel:** {meta.get('author_name', '—')}")
-            thumb = meta.get("thumbnail_url")
-            if thumb:
-                st.image(thumb, caption="YouTube thumbnail", use_container_width=True)
+            # Optional: spoiler-heavy
+            # thumb = meta.get("thumbnail_url")
+            # if thumb:
+            #     st.image(thumb, caption="YouTube thumbnail", use_container_width=True)
         else:
             st.info("Could not fetch YouTube metadata (network/rate limit/removed video).")
 
@@ -241,4 +250,7 @@ with st.expander("Show work information"):
     st.write("Title:", current["title"])
     st.write("Composer:", current.get("composer", ""))
     st.write("Aliases:", ", ".join(current.get("aliases", [])))
-    st.write("Total versions in catalog:", len([v for v in current.get("videos", []) if v.get("yt")]))
+    st.write(
+        "Total versions in catalog:",
+        len([v for v in current.get("videos", []) if v.get("yt")]),
+    )
