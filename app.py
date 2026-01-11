@@ -2,6 +2,7 @@ import json
 import random
 from pathlib import Path
 
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -12,7 +13,7 @@ DATA_PATH = Path(__file__).parent / "data" / "works.json"
 
 st.set_page_config(
     page_title="Blind Aria Trainer",
-    layout="centered"
+    layout="centered",
 )
 
 # =========================
@@ -37,6 +38,7 @@ def yt_url(video_id: str) -> str:
 def yt_audio_only(video_id: str, autoplay: bool = True):
     """
     Invisible YouTube iframe: audio only.
+    Autoplay generally works after a user interaction (button click).
     """
     auto = "1" if autoplay else "0"
     html = f"""
@@ -54,19 +56,39 @@ def yt_audio_only(video_id: str, autoplay: bool = True):
     components.html(html, height=0)
 
 
-def pick_versions(work, count: int):
-    videos = work.get("videos", [])
+@st.cache_data(ttl=24 * 3600)
+def yt_oembed(video_id: str):
+    """
+    Fetch minimal metadata without API key (title + channel).
+    Uses YouTube's oEmbed endpoint.
+    """
+    try:
+        r = requests.get(
+            "https://www.youtube.com/oembed",
+            params={"url": yt_url(video_id), "format": "json"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except requests.RequestException:
+        return None
+
+
+def pick_versions(work: dict, count: int):
+    # Only real IDs (no empty slots ever show up)
+    videos = [v for v in work.get("videos", []) if v.get("yt")]
+    if not videos:
+        return []
     if len(videos) <= count:
-        vids = videos[:]
-        random.shuffle(vids)
-        return vids
+        random.shuffle(videos)
+        return videos
     return random.sample(videos, count)
 
 
 # =========================
 # App State
 # =========================
-
 if "current_work_id" not in st.session_state:
     st.session_state.current_work_id = None
 
@@ -76,12 +98,12 @@ if "now_playing" not in st.session_state:
 if "shuffle_seed" not in st.session_state:
     st.session_state.shuffle_seed = 0
 
+
 # =========================
 # UI Header
 # =========================
-
 st.title("Blind Aria Trainer")
-st.caption("Listen first. No faces. No names. Reveal only when ready.")
+st.caption("Listen first. Reveal later. (Audio-only playback)")
 
 works = load_catalog()
 if not works:
@@ -91,23 +113,18 @@ if not works:
 # =========================
 # Controls
 # =========================
-
 c1, c2 = st.columns([1, 1])
 
 with c1:
-    mode = st.radio(
-        "Mode",
-        ["Random aria", "Search"],
-        horizontal=True
-    )
+    mode = st.radio("Mode", ["Random aria", "Search"], horizontal=True)
 
 with c2:
     versions_count = st.number_input(
-        "Number of versions",
+        "Number of versions (max)",
         min_value=2,
         max_value=10,
         value=5,
-        step=1
+        step=1,
     )
 
 st.divider()
@@ -115,7 +132,6 @@ st.divider()
 # =========================
 # Mode Logic
 # =========================
-
 def set_random_work():
     work = random.choice(works)
     st.session_state.current_work_id = work["id"]
@@ -139,7 +155,7 @@ if mode == "Random aria":
 else:
     query = st.text_input(
         "Search aria / opera / composer",
-        placeholder="e.g. Sempre libera, Don Giovanni, Mozart"
+        placeholder="e.g. Sempre libera, Don Giovanni, Mozart",
     )
 
     matches = []
@@ -151,10 +167,7 @@ else:
         st.info("No matches found.")
 
     if matches:
-        labels = {
-            f'{w["title"]} — {w.get("composer","")}': w["id"]
-            for w in matches
-        }
+        labels = {f'{w["title"]} — {w.get("composer","")}': w["id"] for w in matches}
         selection = st.selectbox("Select work", list(labels.keys()))
         st.session_state.current_work_id = labels[selection]
         st.session_state.shuffle_seed += 1
@@ -163,50 +176,42 @@ else:
 # =========================
 # Resolve Current Work
 # =========================
-
-current = next(
-    (w for w in works if w["id"] == st.session_state.current_work_id),
-    None
-)
-
+current = next((w for w in works if w["id"] == st.session_state.current_work_id), None)
 if not current:
     st.stop()
 
 # =========================
-# Version Selection
+# Build Blind Set
 # =========================
-
 random.seed(f"{current['id']}-{st.session_state.shuffle_seed}")
 versions = pick_versions(current, int(versions_count))
 random.shuffle(versions)
 
-# =========================
-# Playback Controls
-# =========================
+st.subheader("Blind set")
+st.write("Listen without knowing who is singing. Reveal only after listening.")
+st.caption(f"{len(versions)} version(s) available for this aria in your catalog.")
 
+# Playback stop
 if st.button("⏹ Stop playback", use_container_width=True):
     st.session_state.now_playing = None
 
-st.subheader("Blind set")
-st.write("Listen without knowing who is singing. Reveal only after listening.")
+st.divider()
 
 # =========================
 # Versions Loop
 # =========================
-
 for idx, v in enumerate(versions, start=1):
     vid = v["yt"]
 
     st.markdown(f"### Version {idx}")
 
     c1, c2 = st.columns([1, 1])
-
     with c1:
-        if st.button("🎧 Listen", key=f"listen_{idx}", use_container_width=True):
+        if st.button("🎧 Listen", key=f"listen_{current['id']}_{idx}", use_container_width=True):
             st.session_state.now_playing = vid
 
     with c2:
-        if st.button("⏹ Stop", key=f"stop_{idx}", use_container_width=True):
+        if st.button("⏹ Stop", key=f"stop_{current['id']}_{idx}", use_container_width=True):
             if st.session_state.now_playing == vid:
                 st.session_state.now_playing = None
 
@@ -215,6 +220,16 @@ for idx, v in enumerate(versions, start=1):
 
     with st.expander("Reveal"):
         st.write("Work:", f'{current["title"]} — {current.get("composer","")}')
+        meta = yt_oembed(vid)
+        if meta:
+            st.markdown(f"**Title:** {meta.get('title', '—')}")
+            st.markdown(f"**Channel:** {meta.get('author_name', '—')}")
+            thumb = meta.get("thumbnail_url")
+            if thumb:
+                st.image(thumb, caption="YouTube thumbnail", use_container_width=True)
+        else:
+            st.info("Could not fetch YouTube metadata (network/rate limit/removed video).")
+
         st.write("YouTube:", yt_url(vid))
 
     st.divider()
@@ -222,9 +237,8 @@ for idx, v in enumerate(versions, start=1):
 # =========================
 # Optional Work Info
 # =========================
-
 with st.expander("Show work information"):
     st.write("Title:", current["title"])
     st.write("Composer:", current.get("composer", ""))
     st.write("Aliases:", ", ".join(current.get("aliases", [])))
-    st.write("Total versions in catalog:", len(current.get("videos", [])))
+    st.write("Total versions in catalog:", len([v for v in current.get("videos", []) if v.get("yt")]))
