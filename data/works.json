@@ -1,5 +1,6 @@
 {
   "works": [
+
     {
       "id": "don_giovanni_champagne",
       "title": "Fin ch’han dal vino (Champagne Aria)",
@@ -15,11 +16,10 @@
         { "yt": "KFHyyVcsRQA" },
         { "yt": "G_50t1WonhU" },
         { "yt": "5JLpU9sqdiw" },
-        { "yt": "CMJkY8V0BUU" },
-        { "yt": "FcwiOvKnotg" },
-        { "yt": "w1xX7bwQgDU" }
+        { "yt": "CMJkY8V0BUU" }
       ]
     },
+
     {
       "id": "traviata_sempre_libera",
       "title": "Sempre libera",
@@ -34,10 +34,135 @@
         { "yt": "jKYMHyy-rmg" },
         { "yt": "CSen0SwhlfQ" },
         { "yt": "5ExLMH4FW2A" },
-        { "yt": "Qqe9H85AILc" },
-        { "yt": "TWkJ2vPZud4" },
-        { "yt": "sRKDapRPjyo" }
+        { "yt": "Qqe9H85AILc" }
+      ]
+    },
+
+    {
+      "id": "puccini_turandot_nessun_dorma",
+      "title": "Nessun dorma",
+      "composer": "Puccini",
+      "aliases": ["nessun dorma", "turandot nessun dorma", "calaf aria"],
+      "videos": [
+        { "yt": "cWc7vYjgnTs" },
+        { "yt": "LYAsFelf7no" },
+        { "yt": "8A_Tnw53Vqs" },
+        { "yt": "XHc5mZ9RZ8Y" },
+        { "yt": "0t6JpQ2sYfM" }
+      ]
+    },
+
+    {
+      "id": "rossini_barbiere_largo_al_factotum",
+      "title": "Largo al factotum",
+      "composer": "Rossini",
+      "aliases": ["largo al factotum", "figaro aria"],
+      "videos": [
+        { "yt": "-ipb9xbXSAY" },
+        { "yt": "x9fNzkEY9Ko" },
+        { "yt": "z_i6zkWESS4" },
+        { "yt": "cSWh_6vK2Cg" },
+        { "yt": "XPc_ZP50akU" }
+      ]
+    },
+
+    {
+      "id": "bellini_norma_casta_diva",
+      "title": "Casta Diva",
+      "composer": "Bellini",
+      "aliases": ["casta diva", "norma casta diva"],
+      "videos": [
+        { "yt": "s-TwMfgaDC8" },
+        { "yt": "wvBuCLjByaE" },
+        { "yt": "g-6JhBYZCrw" },
+        { "yt": "EJ2L_B7VOWs" },
+        { "yt": "vZFYnF9FZ34" }
+      ]
+    },
+
+    {
+      "id": "donizetti_elisir_una_furtiva_lagrima",
+      "title": "Una furtiva lagrima",
+      "composer": "Donizetti",
+      "aliases": ["una furtiva lagrima", "nemorino aria"],
+      "videos": [
+        { "yt": "2J7JM0tGgRY" },
+        { "yt": "eKQ28VtPEnU" },
+        { "yt": "rGcMepq-nPY" },
+        { "yt": "-nFNzHZXSCY" },
+        { "yt": "9Xv8r0sC8Jk" }
+      ]
+    },
+
+    {
+      "id": "mascagni_cavalleria_voi_lo_sapete",
+      "title": "Voi lo sapete, o mamma",
+      "composer": "Mascagni",
+      "aliases": ["voi lo sapete", "cavalleria rusticana santuzza"],
+      "videos": [
+        { "yt": "hs4BlQgkELc" },
+        { "yt": "bTyDdLsVtTs" },
+        { "yt": "iBUHapG86XI" },
+        { "yt": "7MPnbpa4Sss" },
+        { "yt": "KSkcjsQ1tbI" }
+      ]
+    },
+
+    {
+      "id": "mussorgsky_song_of_the_flea",
+      "title": "Song of the Flea (Flohlied)",
+      "composer": "Mussorgsky",
+      "aliases": ["song of the flea", "flohlied"],
+      "videos": [
+        { "yt": "gsZuvZCjkTo" },
+        { "yt": "PEbnS1OXfew" },
+        { "yt": "LlJ73fXSaNI" },
+        { "yt": "BhcYBfi9mQE" },
+        { "yt": "Drzcj5LF7K4" }
+      ]
+    },
+
+    {
+      "id": "tchaikovsky_onegin_kuda_kuda",
+      "title": "Kuda, kuda… (Lensky’s aria)",
+      "composer": "Tchaikovsky",
+      "aliases": ["kuda kuda", "lensky aria"],
+      "videos": [
+        { "yt": "XYgT89paO1Q" },
+        { "yt": "L2_GBhFtM2U" },
+        { "yt": "TNdPjHcQkPk" },
+        { "yt": "4HPyzB6usRQ" },
+        { "yt": "puWhSucdPAA" }
+      ]
+    },
+
+    {
+      "id": "handel_rinaldo_lascia_chio_pianga",
+      "title": "Lascia ch’io pianga",
+      "composer": "Händel",
+      "aliases": ["lascia chio pianga", "rinaldo aria"],
+      "videos": [
+        { "yt": "EKo_EmfEPWs" },
+        { "yt": "-UY9NVZwIsk" },
+        { "yt": "u-74WzKsFzI" },
+        { "yt": "c56qtfgV5f8" },
+        { "yt": "RnuIhuSv6ZU" }
+      ]
+    },
+
+    {
+      "id": "beethoven_fidelio_abscheulicher",
+      "title": "Abscheulicher! Wo eilst du hin?",
+      "composer": "Beethoven",
+      "aliases": ["abscheulicher", "fidelio leonore aria"],
+      "videos": [
+        { "yt": "nUbUQQUMoO4" },
+        { "yt": "g2K86yOKCHI" },
+        { "yt": "ffTY77NKbP0" },
+        { "yt": "uTbZYAsVUbA" },
+        { "yt": "9lP0XvG2sDk" }
       ]
     }
+
   ]
 }
