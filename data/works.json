@@ -1,6 +1,5 @@
 {
   "works": [
-
     {
       "id": "don_giovanni_champagne",
       "title": "Fin ch’han dal vino (Champagne Aria)",
@@ -12,14 +11,23 @@
         "Don Giovanni Fin ch'han dal vino"
       ],
       "videos": [
-        { "yt": "FXtPyvzNn7o" },
-        { "yt": "KFHyyVcsRQA" },
-        { "yt": "G_50t1WonhU" },
-        { "yt": "5JLpU9sqdiw" },
-        { "yt": "CMJkY8V0BUU" }
+        {
+          "yt": "FXtPyvzNn7o"
+        },
+        {
+          "yt": "KFHyyVcsRQA"
+        },
+        {
+          "yt": "G_50t1WonhU"
+        },
+        {
+          "yt": "5JLpU9sqdiw"
+        },
+        {
+          "yt": "CMJkY8V0BUU"
+        }
       ]
     },
-
     {
       "id": "traviata_sempre_libera",
       "title": "Sempre libera",
@@ -30,139 +38,1641 @@
         "Verdi Sempre libera"
       ],
       "videos": [
-        { "yt": "IGlugsYQZgg" },
-        { "yt": "jKYMHyy-rmg" },
-        { "yt": "CSen0SwhlfQ" },
-        { "yt": "5ExLMH4FW2A" },
-        { "yt": "Qqe9H85AILc" }
+        {
+          "yt": "IGlugsYQZgg"
+        },
+        {
+          "yt": "jKYMHyy-rmg"
+        },
+        {
+          "yt": "CSen0SwhlfQ"
+        },
+        {
+          "yt": "5ExLMH4FW2A"
+        },
+        {
+          "yt": "Qqe9H85AILc"
+        }
       ]
     },
-
     {
       "id": "puccini_turandot_nessun_dorma",
       "title": "Nessun dorma",
       "composer": "Puccini",
-      "aliases": ["nessun dorma", "turandot nessun dorma", "calaf aria"],
+      "aliases": [
+        "nessun dorma",
+        "turandot nessun dorma",
+        "calaf aria"
+      ],
       "videos": [
-        { "yt": "cWc7vYjgnTs" },
-        { "yt": "LYAsFelf7no" },
-        { "yt": "8A_Tnw53Vqs" },
-        { "yt": "XHc5mZ9RZ8Y" },
-        { "yt": "0t6JpQ2sYfM" }
+        {
+          "yt": "cWc7vYjgnTs"
+        },
+        {
+          "yt": "LYAsFelf7no"
+        },
+        {
+          "yt": "8A_Tnw53Vqs"
+        },
+        {
+          "yt": "XHc5mZ9RZ8Y"
+        },
+        {
+          "yt": "0t6JpQ2sYfM"
+        }
       ]
     },
-
     {
       "id": "rossini_barbiere_largo_al_factotum",
       "title": "Largo al factotum",
       "composer": "Rossini",
-      "aliases": ["largo al factotum", "figaro aria"],
+      "aliases": [
+        "largo al factotum",
+        "figaro aria"
+      ],
       "videos": [
-        { "yt": "-ipb9xbXSAY" },
-        { "yt": "x9fNzkEY9Ko" },
-        { "yt": "z_i6zkWESS4" },
-        { "yt": "cSWh_6vK2Cg" },
-        { "yt": "XPc_ZP50akU" }
+        {
+          "yt": "-ipb9xbXSAY"
+        },
+        {
+          "yt": "x9fNzkEY9Ko"
+        },
+        {
+          "yt": "z_i6zkWESS4"
+        },
+        {
+          "yt": "cSWh_6vK2Cg"
+        },
+        {
+          "yt": "XPc_ZP50akU"
+        }
       ]
     },
-
     {
       "id": "bellini_norma_casta_diva",
       "title": "Casta Diva",
       "composer": "Bellini",
-      "aliases": ["casta diva", "norma casta diva"],
+      "aliases": [
+        "casta diva",
+        "norma casta diva",
+        ""
+      ],
       "videos": [
-        { "yt": "s-TwMfgaDC8" },
-        { "yt": "wvBuCLjByaE" },
-        { "yt": "g-6JhBYZCrw" },
-        { "yt": "EJ2L_B7VOWs" },
-        { "yt": "vZFYnF9FZ34" }
+        {
+          "yt": "s-TwMfgaDC8"
+        },
+        {
+          "yt": "wvBuCLjByaE"
+        },
+        {
+          "yt": "g-6JhBYZCrw"
+        },
+        {
+          "yt": "EJ2L_B7VOWs"
+        },
+        {
+          "yt": "vZFYnF9FZ34"
+        },
+        {
+          "yt": "fUK7JO6B_0U"
+        }
       ]
     },
-
     {
       "id": "donizetti_elisir_una_furtiva_lagrima",
       "title": "Una furtiva lagrima",
       "composer": "Donizetti",
-      "aliases": ["una furtiva lagrima", "nemorino aria"],
+      "aliases": [
+        "una furtiva lagrima",
+        "nemorino aria"
+      ],
       "videos": [
-        { "yt": "2J7JM0tGgRY" },
-        { "yt": "eKQ28VtPEnU" },
-        { "yt": "rGcMepq-nPY" },
-        { "yt": "-nFNzHZXSCY" },
-        { "yt": "9Xv8r0sC8Jk" }
+        {
+          "yt": "2J7JM0tGgRY"
+        },
+        {
+          "yt": "eKQ28VtPEnU"
+        },
+        {
+          "yt": "rGcMepq-nPY"
+        },
+        {
+          "yt": "-nFNzHZXSCY"
+        },
+        {
+          "yt": "9Xv8r0sC8Jk"
+        },
+        {
+          "yt": "TTvXV7Iw6CQ"
+        }
       ]
     },
-
     {
       "id": "mascagni_cavalleria_voi_lo_sapete",
       "title": "Voi lo sapete, o mamma",
       "composer": "Mascagni",
-      "aliases": ["voi lo sapete", "cavalleria rusticana santuzza"],
+      "aliases": [
+        "voi lo sapete",
+        "cavalleria rusticana santuzza"
+      ],
       "videos": [
-        { "yt": "hs4BlQgkELc" },
-        { "yt": "bTyDdLsVtTs" },
-        { "yt": "iBUHapG86XI" },
-        { "yt": "7MPnbpa4Sss" },
-        { "yt": "KSkcjsQ1tbI" }
+        {
+          "yt": "hs4BlQgkELc"
+        },
+        {
+          "yt": "bTyDdLsVtTs"
+        },
+        {
+          "yt": "iBUHapG86XI"
+        },
+        {
+          "yt": "7MPnbpa4Sss"
+        },
+        {
+          "yt": "KSkcjsQ1tbI"
+        },
+        {
+          "yt": "PzuDXe_pJm0"
+        }
       ]
     },
-
     {
       "id": "mussorgsky_song_of_the_flea",
       "title": "Song of the Flea (Flohlied)",
       "composer": "Mussorgsky",
-      "aliases": ["song of the flea", "flohlied"],
+      "aliases": [
+        "song of the flea",
+        "flohlied"
+      ],
       "videos": [
-        { "yt": "gsZuvZCjkTo" },
-        { "yt": "PEbnS1OXfew" },
-        { "yt": "LlJ73fXSaNI" },
-        { "yt": "BhcYBfi9mQE" },
-        { "yt": "Drzcj5LF7K4" }
+        {
+          "yt": "gsZuvZCjkTo"
+        },
+        {
+          "yt": "PEbnS1OXfew"
+        },
+        {
+          "yt": "LlJ73fXSaNI"
+        },
+        {
+          "yt": "BhcYBfi9mQE"
+        },
+        {
+          "yt": "Drzcj5LF7K4"
+        }
       ]
     },
-
     {
       "id": "tchaikovsky_onegin_kuda_kuda",
       "title": "Kuda, kuda… (Lensky’s aria)",
       "composer": "Tchaikovsky",
-      "aliases": ["kuda kuda", "lensky aria"],
+      "aliases": [
+        "kuda kuda",
+        "lensky aria"
+      ],
       "videos": [
-        { "yt": "XYgT89paO1Q" },
-        { "yt": "L2_GBhFtM2U" },
-        { "yt": "TNdPjHcQkPk" },
-        { "yt": "4HPyzB6usRQ" },
-        { "yt": "puWhSucdPAA" }
+        {
+          "yt": "XYgT89paO1Q"
+        },
+        {
+          "yt": "L2_GBhFtM2U"
+        },
+        {
+          "yt": "TNdPjHcQkPk"
+        },
+        {
+          "yt": "4HPyzB6usRQ"
+        },
+        {
+          "yt": "puWhSucdPAA"
+        }
       ]
     },
-
     {
       "id": "handel_rinaldo_lascia_chio_pianga",
       "title": "Lascia ch’io pianga",
       "composer": "Händel",
-      "aliases": ["lascia chio pianga", "rinaldo aria"],
+      "aliases": [
+        "lascia chio pianga",
+        "rinaldo aria"
+      ],
       "videos": [
-        { "yt": "EKo_EmfEPWs" },
-        { "yt": "-UY9NVZwIsk" },
-        { "yt": "u-74WzKsFzI" },
-        { "yt": "c56qtfgV5f8" },
-        { "yt": "RnuIhuSv6ZU" }
+        {
+          "yt": "EKo_EmfEPWs"
+        },
+        {
+          "yt": "-UY9NVZwIsk"
+        },
+        {
+          "yt": "u-74WzKsFzI"
+        },
+        {
+          "yt": "c56qtfgV5f8"
+        },
+        {
+          "yt": "RnuIhuSv6ZU"
+        }
       ]
     },
-
     {
       "id": "beethoven_fidelio_abscheulicher",
       "title": "Abscheulicher! Wo eilst du hin?",
       "composer": "Beethoven",
-      "aliases": ["abscheulicher", "fidelio leonore aria"],
+      "aliases": [
+        "abscheulicher",
+        "fidelio leonore aria"
+      ],
       "videos": [
-        { "yt": "nUbUQQUMoO4" },
-        { "yt": "g2K86yOKCHI" },
-        { "yt": "ffTY77NKbP0" },
-        { "yt": "uTbZYAsVUbA" },
-        { "yt": "9lP0XvG2sDk" }
+        {
+          "yt": "nUbUQQUMoO4"
+        },
+        {
+          "yt": "g2K86yOKCHI"
+        },
+        {
+          "yt": "ffTY77NKbP0"
+        },
+        {
+          "yt": "uTbZYAsVUbA"
+        },
+        {
+          "yt": "9lP0XvG2sDk"
+        }
+      ]
+    },
+    {
+      "id": "mascagni_cavalleria_mamma_quel_vino",
+      "title": "Mamma, quel vino è generoso",
+      "composer": "Mascagni",
+      "aliases": [
+        "mamma",
+        "quel vino è generoso",
+        "quel vino",
+        "mamma quel vino",
+        "cavalleria mamma quel vino",
+        "mascagni mamma quel vino"
+      ],
+      "videos": [
+        {
+          "yt": "jCObUfLYLjo"
+        }
+      ]
+    },
+    {
+      "id": "boito_mefistofele_giunto_sul_passo",
+      "title": "Giunto sul passo estremo",
+      "composer": "Boito",
+      "aliases": [
+        "giunto",
+        "giunto sul passo",
+        "boito giunto",
+        "mefistofele giunto sul passo",
+        "faust giunto sul passo"
+      ],
+      "videos": [
+        {
+          "yt": "rH5k8f8Wik4"
+        },
+        {
+          "yt": "ZEqILs4pShg"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_niun_mi_tema",
+      "title": "Niun mi tema",
+      "composer": "Verdi",
+      "aliases": [
+        "otello niun mi tema",
+        "otello niun",
+        "verdi otello niun",
+        "otello jeder knabe kann mein schwert mir entreissen",
+        "otello jeder knabe",
+        "jeder knabe kann"
+      ],
+      "videos": [
+        {
+          "yt": "9fjwvMfpLeY"
+        },
+        {
+          "yt": "dfC6hF35-LM"
+        }
+      ]
+    },
+    {
+      "id": "giordano_chenier_come_un_bel_di",
+      "title": "Come un bel di di maggio",
+      "composer": "Giordano",
+      "aliases": [
+        "giordano come un bel di",
+        "andrea come un bel di",
+        "chenier come un bel di",
+        "andrea chenier come un bel di",
+        "giordano chenier come un bel di"
+      ],
+      "videos": [
+        {
+          "yt": "63AGzTxZmn0"
+        }
+      ]
+    },
+    {
+      "id": "donizetti_lammermoor_sulla_tomba_che_rinserra",
+      "title": "Sulla tomba che rinserra",
+      "composer": "Donizetti",
+      "aliases": [
+        "donizetti sulla tomba",
+        "lucia sulla tomba",
+        "pertile sulla tomba"
+      ],
+      "videos": [
+        {
+          "yt": "aQRePh2GUjQ"
+        }
+      ]
+    },
+    {
+      "id": "flotow_martha_ach_so_fromm",
+      "title": "Ach! so fromm, ach! so traut",
+      "composer": "Flotow",
+      "aliases": [
+        "m'appari tutto amor",
+        "flotow m'appari tutto amor",
+        "flotow ach so traut",
+        "martha ach so traut",
+        "marta ach so traut",
+        "marta m'appari"
+      ],
+      "videos": [
+        {
+          "yt": "yySSRahAmXA"
+        }
+      ]
+    },
+    {
+      "id": "giordano_fedora_amor_ti_vieta",
+      "title": "Amor ti vieta",
+      "composer": "Giordano",
+      "aliases": [
+        "giordano amor ti vieta"
+      ],
+      "videos": [
+        {
+          "yt": "vmvvFrTMwZE"
+        }
+      ]
+    },
+    {
+      "id": "leoncavallo_pagliacci_recitar_vesti_la_giubba",
+      "title": "Recitar - Vesti la giubba",
+      "composer": "Leoncavallo",
+      "aliases": [
+        "leoncavallo recitar",
+        "recitar vesti",
+        "vesti la giubba",
+        "ridi pagliaccio",
+        "jetzt spielen",
+        "pagliacci jetzt spielen",
+        "pagliacci hüll dich",
+        "hüll dich",
+        "recitar vesti la giubba"
+      ],
+      "videos": [
+        {
+          "yt": "cFRjHAEmw74"
+        },
+        {
+          "yt": "j87p4BjDORY"
+        },
+        {
+          "yt": "YRQ7BQ5ViZM"
+        },
+        {
+          "yt": "K-uS0pmLgDw"
+        }
+      ]
+    },
+    {
+      "id": "cilea_adriana_la_dolcissima",
+      "title": "La dolcissima effigie",
+      "composer": "Cilea",
+      "aliases": [
+        "cilea la dolcissima",
+        "adriana la dolcissima",
+        "lecouvreur la dolcissima"
+      ],
+      "videos": [
+        {
+          "yt": "Lqwg3dDa2bk"
+        },
+        {
+          "yt": "mh4LMgm30WE"
+        }
+      ]
+    },
+    {
+      "id": "puccini_manon_lescaut_ah_manon",
+      "title": "Ah, Manon mi tradisce",
+      "composer": "Puccini",
+      "aliases": [
+        "puccini ah manon",
+        "manon mi tradisce"
+      ],
+      "videos": [
+        {
+          "yt": "3aOEiKDnpXE"
+        },
+        {
+          "yt": "q6AyJgpuhgc"
+        },
+        {
+          "yt": "yNhIwXRHOSI"
+        }
+      ]
+    },
+    {
+      "id": "donizetti_lammermoor_tombe_degli_avi",
+      "title": "Tombe degli avi miei",
+      "composer": "Donizetti",
+      "aliases": [
+        "donizetti tombe degli avi miei",
+        "tombe",
+        "lucia tombe degli avi",
+        "lammermoor tombe"
+      ],
+      "videos": [
+        {
+          "yt": "vQK4VSFQtM4"
+        }
+      ]
+    },
+    {
+      "id": "verdi_la_forza_o_tu_che_in_seno",
+      "title": "O tu che in seno",
+      "composer": "Verdi",
+      "aliases": [
+        "verdi o tu che in seno",
+        "la forza o tu che in seno",
+        "la forza del destino o tu",
+        "die welt ist nur ein traum",
+        "la forza die welt ist nur ein traum",
+        "o tu che in seno agli angeli"
+      ],
+      "videos": [
+        {
+          "yt": "I-K18Fe3eUw"
+        },
+        {
+          "yt": "fm4rY8QYFcA"
+        },
+        {
+          "yt": "VxLoBDYSvOM"
+        }
+      ]
+    },
+    {
+      "id": "wagner_lohengrin_in_fernem_land",
+      "title": "In fernem Land",
+      "composer": "Wagner",
+      "aliases": [
+        "da voi lontan in sconosciuta terra",
+        "da voi lontan",
+        "wagner da voi lontan",
+        "lohengrin da voi"
+      ],
+      "videos": [
+        {
+          "yt": "Abep_CjFdz4"
+        },
+        {
+          "yt": "tQArsoHhF_Y"
+        },
+        {
+          "yt": "n6NQekunOrU"
+        }
+      ]
+    },
+    {
+      "id": "wagner_lohengrin_das_süsse_lied",
+      "title": "Das süsse Lied verhallt",
+      "composer": "Wagner",
+      "aliases": [
+        "cessaro i canti al fin",
+        "cessaron i canti al fin",
+        "wagner cessaron",
+        "wagner lohengrin cessaron i canti"
+      ],
+      "videos": [
+        {
+          "yt": "wv898rsFqC8"
+        }
+      ]
+    },
+    {
+      "id": "donizetti_la_favorita_spirto_gentil",
+      "title": "Spirto gentil",
+      "composer": "Donizetti",
+      "aliases": [
+        "donizetti spirto gentil",
+        "favorita spirto gentil"
+      ],
+      "videos": [
+        {
+          "yt": "JIlhkRJbux0"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_si_pel_ciel",
+      "title": "Si, pel ciel marmoreo giuro",
+      "composer": "Verdi",
+      "aliases": [
+        "otello si pel ciel",
+        "otello si per ciel",
+        "verdi otello si pel ciel",
+        "si per il ciel",
+        "duetto si pel ciel"
+      ],
+      "videos": [
+        {
+          "yt": "e2laCI7927w"
+        },
+        {
+          "yt": "vRDOvwMoZzI"
+        }
+      ]
+    },
+    {
+      "id": "puccini_tosca_recondita_armonia",
+      "title": "Recondita armonia",
+      "composer": "Puccini",
+      "aliases": [
+        "recondita",
+        "tosca recondita",
+        "puccini recondita armonia",
+        "cavaradossi recondita"
+      ],
+      "videos": [
+        {
+          "yt": "Zh2z4BJhheA"
+        },
+        {
+          "yt": "ycJzJP4QmSY"
+        }
+      ]
+    },
+    {
+      "id": "verdi_trovatore_di_quella_pira",
+      "title": "Di quella pira",
+      "composer": "Verdi",
+      "aliases": [
+        "trovatore di quella pira",
+        "allarmi"
+      ],
+      "videos": [
+        {
+          "yt": "5S_n_VAbHEs"
+        },
+        {
+          "yt": "1xwrrRUpJ5s"
+        }
+      ]
+    },
+    {
+      "id": "bellini_puritani_a_te_o_cara",
+      "title": "A te, o cara",
+      "composer": "Bellini",
+      "aliases": [
+        "bellini a te o cara",
+        "puritani a te o cara",
+        "puritani a te"
+      ],
+      "videos": [
+        {
+          "yt": "BQmeebrrmsU"
+        }
+      ]
+    },
+    {
+      "id": "verdi_luisa_miller_quando_le_sere_al",
+      "title": "Quando le sere al placido",
+      "composer": "Verdi",
+      "aliases": [
+        "verdi miller",
+        "verdi luisa quando",
+        "verdi quando le sere",
+        "luisa miller quando le sere"
+      ],
+      "videos": [
+        {
+          "yt": "IUzMK3ZAgDM"
+        }
+      ]
+    },
+    {
+      "id": "wagner_lohengrin_atmest_du_nicht",
+      "title": "Atmest du nicht mit mir die süssen Düfte",
+      "composer": "Wagner",
+      "aliases": [
+        "di non t'incantan",
+        "lohengrin di non",
+        "lohengrin atmest"
+      ],
+      "videos": [
+        {
+          "yt": "Ee9fq86uRhc"
+        },
+        {
+          "yt": "4IzGWZ-Zahw"
+        }
+      ]
+    },
+    {
+      "id": "mascagni_cavalleria_o_lola",
+      "title": "O Lola, ch'hai di latti",
+      "composer": "Mascagni",
+      "aliases": [
+        "o lola",
+        "cavalleria o lola",
+        "cavalleria siciliana"
+      ],
+      "videos": [
+        {
+          "yt": "Y-yQ9Wm-LgQ"
+        }
+      ]
+    },
+    {
+      "id": "puccini_manon_lescaut_ah_non_v_avvicinate",
+      "title": "Ah! Non v'avvicinate",
+      "composer": "Puccini",
+      "aliases": [
+        "ah non vavvicinate",
+        "ah non vi avvicinate",
+        "manon ah non v'avvicinate"
+      ],
+      "videos": [
+        {
+          "yt": "o2Zq3RfX6H0"
+        },
+        {
+          "yt": "9cpI_Vf7Jro"
+        }
+      ]
+    },
+    {
+      "id": "rossini_guglielmo_tell_ah_matilde",
+      "title": "Ah, Matilde, io t'amo",
+      "composer": "Rossini",
+      "aliases": [
+        "ah matilde io t'amo",
+        "guglielmo ah matilde",
+        "tell ah matilde"
+      ],
+      "videos": [
+        {
+          "yt": "F8GacPRcXQk"
+        }
+      ]
+    },
+    {
+      "id": "puccini_boheme_che_gelida_manina",
+      "title": "Che gelida manina",
+      "composer": "Puccini",
+      "aliases": [
+        "puccini che gelida",
+        "boheme che gelida",
+        "rodolfo che gelida manina"
+      ],
+      "videos": [
+        {
+          "yt": "uOhsyZOWnGA"
+        },
+        {
+          "yt": "vE5iMZl0tf0"
+        }
+      ]
+    },
+    {
+      "id": "puccini_manon_lescaut_donna_non_vidi",
+      "title": "Donna non vidi mai",
+      "composer": "Puccini",
+      "aliases": [
+        "donna non vidi mai",
+        "manon donna non vidi mai",
+        "donna non vidi"
+      ],
+      "videos": [
+        {
+          "yt": "5Yz1X0jI0Uk"
+        },
+        {
+          "yt": "uBeHEorGdQI"
+        },
+        {
+          "yt": "DQGQS29lkN0"
+        }
+      ]
+    },
+    {
+      "id": "donizetti_la_favorita_una_vergin",
+      "title": "Una vergin, un angiol di Dio",
+      "composer": "Donizetti",
+      "aliases": [
+        "una vergin la favorita",
+        "un angiol",
+        "favorita una vergin"
+      ],
+      "videos": [
+        {
+          "yt": "JS2wzccCEuU"
+        }
+      ]
+    },
+    {
+      "id": "wagner_lohengrin_mein_lieber_schwan",
+      "title": "Mein lieber Schwan",
+      "composer": "Wagner",
+      "aliases": [
+        "wagner merce cigno gentil",
+        "mio caro cigno",
+        "merce cigno gentil",
+        "lohengrin merce"
+      ],
+      "videos": [
+        {
+          "yt": "wkJub2ixy4M"
+        }
+      ]
+    },
+    {
+      "id": "gastaldon_musica_proibita",
+      "title": "Musica Proibita",
+      "composer": "Gastaldon",
+      "aliases": [
+        "stanislao gastaldon musica proibita",
+        "musica gastaldon",
+        "stanislao musica"
+      ],
+      "videos": [
+        {
+          "yt": "t4K5bVTAxfE"
+        }
+      ]
+    },
+    {
+      "id": "giordano_chenier_vicino_a_te",
+      "title": "Vicino a te s'acqueta",
+      "composer": "Giordano",
+      "aliases": [
+        "chenier vicino a te",
+        "giordano vicino a te"
+      ],
+      "videos": [
+        {
+          "yt": "7-ywfyry6yA"
+        }
+      ]
+    },
+    {
+      "id": "giordano_chenier_un_di_all_azzurro",
+      "title": "Un di all'azzurro spazio",
+      "composer": "Giordano",
+      "aliases": [
+        "un di",
+        "chenier un di",
+        "chenier un di all'azzurro",
+        "andrea un di"
+      ],
+      "videos": [
+        {
+          "yt": "nZ7eQzz9QVM"
+        },
+        {
+          "yt": "HYRm-EFqjlg"
+        }
+      ]
+    },
+    {
+      "id": "cilea_adriana_l_anima_ho",
+      "title": "L'anima ho stanca",
+      "composer": "Cilea",
+      "aliases": [
+        "adriana lecouvreur l'anima ho",
+        "adriana l'anima ho"
+      ],
+      "videos": [
+        {
+          "yt": "_-UJSHCdtHA"
+        }
+      ]
+    },
+    {
+      "id": "puccini_tosca_e_lucevan",
+      "title": "E lucevan le stelle",
+      "composer": "Puccini",
+      "aliases": [
+        "tosca e lucevan",
+        "cavaradossi e lucevan le stelle",
+        "puccini e lucevan"
+      ],
+      "videos": [
+        {
+          "yt": "KlL3NKSCqbw"
+        }
+      ]
+    },
+    {
+      "id": "verdi_trovatore_ah_si_ben mio",
+      "title": "Ah si, ben mio",
+      "composer": "Verdi",
+      "aliases": [
+        "trovatore ah si ben mio",
+        "trovatore ah si",
+        "verdi trovatore ah si"
+      ],
+      "videos": [
+        {
+          "yt": "_8M-V1SR-4k"
+        }
+      ]
+    },
+    {
+      "id": "meyerbeer_l_africaine_pays_merveilleux",
+      "title": "Pays merveilleux - O paradis",
+      "composer": "Meyerbeer",
+      "aliases": [
+        "mi batte il cuor",
+        "l'africana",
+        "o paradiso",
+        "land so wunderbar",
+        "l'africaine land so wunderbar"
+      ],
+      "videos": [
+        {
+          "yt": "t7jKAm3oSh0"
+        }
+      ]
+    },
+    {
+      "id": "giordano_fedora_vedi_io_piango",
+      "title": "Vedi, io piango",
+      "composer": "Giordano",
+      "aliases": [
+        "giordano vedi io piango",
+        "io piango",
+        "fedora io piango"
+      ],
+      "videos": [
+        {
+          "yt": "6lRF2Wv2tVY"
+        }
+      ]
+    },
+    {
+      "id": "bizet_carmen_c_est_toi",
+      "title": "C'est toi? C'est moi",
+      "composer": "Bizet",
+      "aliases": [
+        "sei tu? son io",
+        "sei tu son io",
+        "sei tu - son io",
+        "carmen sei tu"
+      ],
+      "videos": [
+        {
+          "yt": "Us410dbWbTo"
+        }
+      ]
+    },
+    {
+      "id": "leoncavallo_pagliacci_o_colombina",
+      "title": "O Colombina",
+      "composer": "Leoncavallo",
+      "aliases": [
+        "o colombina cara",
+        "pagliacci o colombina"
+      ],
+      "videos": [
+        {
+          "yt": "m1eMb-Jv9GI"
+        }
+      ]
+    },
+    {
+      "id": "boito_mefistofele_dai_campi",
+      "title": "Dai campi, dai prati",
+      "composer": "Boito",
+      "aliases": [
+        "mefistofele dai campi",
+        "faust dai campi"
+      ],
+      "videos": [
+        {
+          "yt": "E9v5qWvGaVw"
+        },
+        {
+          "yt": "YZRUt0J7rw4"
+        }
+      ]
+    },
+    {
+      "id": "mascagni_iris_apri_la_tua",
+      "title": "Apri la tua finestra",
+      "composer": "Mascagni",
+      "aliases": [
+        "mascagni apri la tua finestra",
+        "iris apri"
+      ],
+      "videos": [
+        {
+          "yt": "l4ixZdN5osE"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_dio_ti_giocondi",
+      "title": "Dio ti giocondi, o sposo",
+      "composer": "Verdi",
+      "aliases": [
+        "dio ti giocondi",
+        "otello dio ti giocondi o sposo",
+        "otello dio ti giocondi",
+        "duetto dio ti giocondi",
+        "duetto otello dio ti giocondi",
+        "desdemona dio ti giocondi"
+      ],
+      "videos": [
+        {
+          "yt": "mTXcYquqE88"
+        },
+        {
+          "yt": "IlKFUpVN-P8"
+        }
+      ]
+    },
+    {
+      "id": "puccini_manon_lescaut_tu_tu_amore",
+      "title": "Tu, tu, amore, tu",
+      "composer": "Puccini",
+      "aliases": [
+        "tu tu amore tu",
+        "duetto tu tu",
+        "duetto manon de grieux",
+        "manon tu tu amore tu",
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "8pxEbkCuMqQ"
+        }
+      ]
+    },
+    {
+      "id": "ponchielli_la_gioconda_cielo_e_mar",
+      "title": "Cielo e mar",
+      "composer": "Ponchielli",
+      "aliases": [
+        "la gioconda cielo e mar",
+        "la gioconda cielo"
+      ],
+      "videos": [
+        {
+          "yt": "vgCU_EuzE5g"
+        }
+      ]
+    },
+    {
+      "id": "puccini_manon_lescaut_tra_voi_belle",
+      "title": "Tra voi belle, brune e bionde",
+      "composer": "Puccini",
+      "aliases": [
+        "manon tra voi belle",
+        "des grieux tra voi belle",
+        "de grieux tra voi belle"
+      ],
+      "videos": [
+        {
+          "yt": "auAvrrxG2-A"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_dio_mi_potevi",
+      "title": "Dio mi potevi scagliar",
+      "composer": "Verdi",
+      "aliases": [
+        "otello dio mi potevi",
+        "dio mi potevi verdi",
+        "otello dio mi potevi scagliar"
+      ],
+      "videos": [
+        {
+          "yt": "yRDd8IXe70Q"
+        }
+      ]
+    },
+    {
+      "id": "wagner_der_fliegende_holländer_willst_jenes_tags_du",
+      "title": "Willst jenes Tags du nicht dich mehr entsinnen",
+      "composer": "Wagner",
+      "aliases": [
+        "wagner willst jenes tags",
+        "eric willst jenes tags"
+      ],
+      "videos": [
+        {
+          "yt": "t_vA13PnOFU"
+        }
+      ]
+    },
+    {
+      "id": "berlin_annie_get_your_gun_there_s_no_business",
+      "title": "There's No Business like Show Business",
+      "composer": "Berlin",
+      "aliases": [
+        "berlin there is no business"
+      ],
+      "videos": [
+        {
+          "yt": "B1g7I4GeU9w"
+        }
+      ]
+    },
+    {
+      "id": "halévy_la_juive_rachel_quand_du_seigneur",
+      "title": "Rachel, quand du Seigneur",
+      "composer": "Halévy",
+      "aliases": [
+        "die jüdin recha als gott",
+        "recha als gott dich einst",
+        "die jüdin: recha"
+      ],
+      "videos": [
+        {
+          "yt": "J5Cz2KM-y3s"
+        }
+      ]
+    },
+    {
+      "id": "wagner_siegfried_du_holdes_vöglein",
+      "title": "Du holdes Vöglein",
+      "composer": "Wagner",
+      "aliases": [
+        "siegfried du holdes vöglein"
+      ],
+      "videos": [
+        {
+          "yt": "9Kqs49ib87w"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_wie_dir_die_stirn",
+      "title": "Wie dir die Stirn so offen steht",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "91x_ytV-IdQ"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_schläfst_du_gast",
+      "title": "Schläfst du, Gast?",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "MPiuYemA6cU"
+        }
+      ]
+    },
+    {
+      "id": "wagner_lohengrin_höchstes_vertrau_n",
+      "title": "Höchstes Vertrau'n",
+      "composer": "Wagner",
+      "aliases": [
+        "höchstes vertrauen"
+      ],
+      "videos": [
+        {
+          "yt": "bOYY6LvSQk4"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_siegmund_heiß_ich",
+      "title": "Siegmund heiß' ich",
+      "composer": "Wagner",
+      "aliases": [
+        "Siegmund bin ich"
+      ],
+      "videos": [
+        {
+          "yt": "rtDaXf2NWt8"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_du_bist_der_lenz",
+      "title": "Du bist der Lenz, nach dem ich verlangte",
+      "composer": "Wagner",
+      "aliases": [
+        "du bist der lenz",
+        "sieglinde du bist der lenz"
+      ],
+      "videos": [
+        {
+          "yt": "ygf3nAzVFsc"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_ein_schwert_verhieß_mir",
+      "title": "Ein Schwert verhieß mir der Vater",
+      "composer": "Wagner",
+      "aliases": [
+        "siegmund ein schwert"
+      ],
+      "videos": [
+        {
+          "yt": "Thk96aMrsZM"
+        }
+      ]
+    },
+    {
+      "id": "verdi_aida_se_quel_guerriero_io",
+      "title": "Se quel guerriero io fossi",
+      "composer": "Verdi",
+      "aliases": [
+        "o wäre ich erkoren",
+        "radames o wäre ich erkoren",
+        "aida o wäre ich erkoren"
+      ],
+      "videos": [
+        {
+          "yt": "j0hEacZFwOo"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_dich_selige_frau",
+      "title": "Dich selige Frau",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "Oif556XyF9E"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_winterstürme_wichen_dem_wonnemond",
+      "title": "Winterstürme wichen dem Wonnemond",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "yT-w75TlKPo"
+        }
+      ]
+    },
+    {
+      "id": "wagner_parsifal_wie_dünkt_mich_doch",
+      "title": "Wie dünkt mich doch die Aue heut so schön!",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "LG0NrBGWSH0"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_was_gleißt_dort_hell",
+      "title": "Was gleißt dort hell im Glimmerschein?",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "B3bPhCOEFho"
+        }
+      ]
+    },
+    {
+      "id": "wagner_die_walküre_der_männer_sippe_saß",
+      "title": "Der Männer Sippe saß hier im Saal",
+      "composer": "Wagner",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "7Cm9gThzXbE"
+        }
+      ]
+    },
+    {
+      "id": "gounod_faust_salut_demeure_chaste_et",
+      "title": "Salut! Demeure chaste et pure",
+      "composer": "Gounod",
+      "aliases": [
+        "salve dimora casta e pura",
+        "faust salve dimora",
+        "gounod salve dimora"
+      ],
+      "videos": [
+        {
+          "yt": "mpHG_30IrzU"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_ora_e_per_sempre",
+      "title": "Ora e per sempre addio",
+      "composer": "Verdi",
+      "aliases": [
+        "otello ora e per sempre"
+      ],
+      "videos": [
+        {
+          "yt": "nXodQsEVEPs"
+        }
+      ]
+    },
+    {
+      "id": "verdi_il_trovatore_deserto_sulla_terra",
+      "title": "Deserto sulla terra",
+      "composer": "Verdi",
+      "aliases": [
+        "trovatore deserto",
+        "manrico deserto sulla terra"
+      ],
+      "videos": [
+        {
+          "yt": "OTcj0u-wyGc"
+        }
+      ]
+    },
+    {
+      "id": "leoncavallo_pagliacci_no_pagliaccio_non_son",
+      "title": "No, pagliaccio non son",
+      "composer": "Leoncavallo",
+      "aliases": [
+        "i pagliacci no pagliaccio",
+        "pagliaccio non son",
+        "canio pagliaccio non son"
+      ],
+      "videos": [
+        {
+          "yt": "cZ9h7vbMjes"
+        }
+      ]
+    },
+    {
+      "id": "verdi_il_trovatore_mal_reggendo_all_aspro",
+      "title": "Mal reggendo all'aspro assalto",
+      "composer": "Verdi",
+      "aliases": [
+        "manrico mal reggendo",
+        "trovatore mal reggendo"
+      ],
+      "videos": [
+        {
+          "yt": "WHHZJm-hCsw"
+        }
+      ]
+    },
+    {
+      "id": "bizet_carmen_la_fleur_que_tu",
+      "title": "La fleur que tu m'avais jetée",
+      "composer": "Bizet",
+      "aliases": [
+        "don jose il fiore",
+        "don jose la fleur",
+        "il fior che avevi a me tu dato",
+        "il fiore che avevi"
+      ],
+      "videos": [
+        {
+          "yt": "MRMWqgVuUU0"
+        }
+      ]
+    },
+    {
+      "id": "verdi_il_trovatore_ciel_non_m_inganno",
+      "title": "Ciel, non m'inganno",
+      "composer": "Verdi",
+      "aliases": [
+        "manrico ciel non m'inganno",
+        "trovatore ciel non m'inganno"
+      ],
+      "videos": [
+        {
+          "yt": "NkPPrI4j9G4"
+        }
+      ]
+    },
+    {
+      "id": "verdi_aida_là_tra_le_foreste",
+      "title": "Là, tra le foreste vergini",
+      "composer": "Verdi",
+      "aliases": [
+        "radames la tra le foreste",
+        "la tra le foreste"
+      ],
+      "videos": [
+        {
+          "yt": "w0TmUMEnwNA"
+        }
+      ]
+    },
+    {
+      "id": "meyerbeer_les_huguenots_plus_blanche_que_la",
+      "title": "Plus blanche que la blanche hermine",
+      "composer": "Meyerbeer",
+      "aliases": [
+        "Bianca al par di neve alpina",
+        "gli ugonotti bianca al par di neve"
+      ],
+      "videos": [
+        {
+          "yt": "yIdgqXhVvsU"
+        }
+      ]
+    },
+    {
+      "id": "saint_saens_samson_et_dalila_arrêtez_ô_mes_frères",
+      "title": "Arrêtez, ô mes frères",
+      "composer": "Saint-Saens",
+      "aliases": [
+        "arretez o mes freres",
+        "figli miei v'arrestate",
+        "samson figli miei"
+      ],
+      "videos": [
+        {
+          "yt": "853ooCvzdXc"
+        }
+      ]
+    },
+    {
+      "id": "puccini_la_boheme_quest_è_mimi",
+      "title": "Quest'è Mimi",
+      "composer": "Puccini",
+      "aliases": [
+        "questo è mimi",
+        "questa è mimi",
+        "rodolfo questa è mimi",
+        "rodolfo quest'è mimi"
+      ],
+      "videos": [
+        {
+          "yt": "2_90XN49Idk"
+        }
+      ]
+    },
+    {
+      "id": "puccini_la_fanciulla_del_west_or_son_sei_mesi",
+      "title": "Or son sei mesi",
+      "composer": "Puccini",
+      "aliases": [
+        "johnson or son sei mesi",
+        "dick or son sei mesi"
+      ],
+      "videos": [
+        {
+          "yt": "EjCErK0imHU"
+        }
+      ]
+    },
+    {
+      "id": "puccini_la_fanciulla_del_west_ch_ella_mi_creda",
+      "title": "Ch'ella mi creda",
+      "composer": "Puccini",
+      "aliases": [
+        "johnson che ella mi creda",
+        "johnson ch'ella mi creda",
+        "che ella mi creda"
+      ],
+      "videos": [
+        {
+          "yt": "pAN5V8c09YI"
+        }
+      ]
+    },
+    {
+      "id": "giordano_andrea_chenier_credo_in_una_possanza",
+      "title": "Credo in una possanza arcana",
+      "composer": "Giordano",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "3e9ba7Z5z7k"
+        }
+      ]
+    },
+    {
+      "id": "giordano_andrea_chenier_si_fui_soldato",
+      "title": "Si, fui soldato",
+      "composer": "Giordano",
+      "aliases": [
+        "si fui soldato",
+        "chenier fui soldato",
+        "fui soldato"
+      ],
+      "videos": [
+        {
+          "yt": "FVUR4jMxt6A"
+        }
+      ]
+    },
+    {
+      "id": "giordano_andrea_chenier_la_mamma_morta",
+      "title": "La mamma morta",
+      "composer": "Giordano",
+      "aliases": [
+        "chenier mamma morta"
+      ],
+      "videos": [
+        {
+          "yt": "rwtl4vCQ8R8"
+        }
+      ]
+    },
+    {
+      "id": "cilea_adriana_lecouvreur_poveri_fiori",
+      "title": "Poveri fiori",
+      "composer": "Cilea",
+      "aliases": [
+        "lecouvreur poveri fiori"
+      ],
+      "videos": [
+        {
+          "yt": "FrY76IKUico"
+        }
+      ]
+    },
+    {
+      "id": "refice_cecilia_la_morte_di_cecilia",
+      "title": "La morte di Cecilia",
+      "composer": "Refice",
+      "aliases": [
+        "cecilia la morte"
+      ],
+      "videos": [
+        {
+          "yt": "_OK5z9Mlnxc"
+        }
+      ]
+    },
+    {
+      "id": "cilea_l_arlesiana_esser_madre_è_un",
+      "title": "Esser madre è un inferno",
+      "composer": "Cilea",
+      "aliases": [
+        "arlesiana esser madre"
+      ],
+      "videos": [
+        {
+          "yt": "rOUpgh6a4OQ"
+        }
+      ]
+    },
+    {
+      "id": "verdi_otello_gia_nella_notte_densa",
+      "title": "Gia nella notte densa",
+      "composer": "Verdi",
+      "aliases": [
+        "otello duetto d'amore",
+        "duetto d'amore gia nella notte",
+        "desdemona gia nella notte"
+      ],
+      "videos": [
+        {
+          "yt": "8SmJXvYXlOc"
+        }
+      ]
+    },
+    {
+      "id": "puccini_tosca_vissi_d_arte",
+      "title": "Vissi d'arte",
+      "composer": "Puccini",
+      "aliases": [
+        "tosca vissi d'arte"
+      ],
+      "videos": [
+        {
+          "yt": "edEZLuHV4W8"
+        }
+      ]
+    },
+    {
+      "id": "puccini_la_bohème_donde_lieta_usci",
+      "title": "Donde lieta usci",
+      "composer": "Puccini",
+      "aliases": [
+        "mimi donde lieta"
+      ],
+      "videos": [
+        {
+          "yt": "vG6E9r6MnJI"
+        }
+      ]
+    },
+    {
+      "id": "verdi_il_trovatore_tacea_la_notte_placida",
+      "title": "Tacea la notte placida",
+      "composer": "Verdi",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "CFhybYlTOWM"
+        }
+      ]
+    },
+    {
+      "id": "verdi_la_forza_del_destino_pace_pace_mio_dio",
+      "title": "Pace, pace, mio Dio",
+      "composer": "Verdi",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "rBgX1lulEO8"
+        }
+      ]
+    },
+    {
+      "id": "boito_mefistofele_l_altra_notte_in",
+      "title": "L'altra notte in fondo al mare",
+      "composer": "Boito",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "TSDmv4VCu1k"
+        }
+      ]
+    },
+    {
+      "id": "puccini_la_bohème_si_mi_chiamano_mimì",
+      "title": "Si, mi chiamano Mimì",
+      "composer": "Puccini",
+      "aliases": [
+        "mimi mi chiamano"
+      ],
+      "videos": [
+        {
+          "yt": "pBiwX9sdSjo"
+        }
+      ]
+    },
+    {
+      "id": "verdi_la_traviata_addio_bel_passato",
+      "title": "Addio bel passato",
+      "composer": "Verdi",
+      "aliases": [
+        "violetta addio del passato"
+      ],
+      "videos": [
+        {
+          "yt": "ofh-sLKzP-A"
+        }
+      ]
+    },
+    {
+      "id": "bellini_la_sonnambula_ah_non_credea_mirarti",
+      "title": "Ah non credea mirarti",
+      "composer": "Bellini",
+      "aliases": [
+        ""
+      ],
+      "videos": [
+        {
+          "yt": "lRU5Up8P6XM"
+        }
       ]
     }
-
   ]
 }
