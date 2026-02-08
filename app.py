@@ -10,6 +10,7 @@ import streamlit.components.v1 as components
 # Configuration
 # =========================
 DATA_PATH = Path(__file__).parent / "data" / "works.json"
+MIN_VERSIONS_REQUIRED = 3  # <-- enforce at least 3 versions
 
 st.set_page_config(
     page_title="Blind Aria Trainer",
@@ -137,8 +138,16 @@ def yt_oembed(video_id: str):
         return None
 
 
+def valid_video_ids(work: dict) -> list[str]:
+    """Return non-empty yt IDs."""
+    return [v.get("yt") for v in work.get("videos", []) if v.get("yt")]
+
+
+def has_min_versions(work: dict, n: int = MIN_VERSIONS_REQUIRED) -> bool:
+    return len(valid_video_ids(work)) >= n
+
+
 def pick_versions(work: dict, count: int):
-    # Only real IDs (no empty slots ever show up)
     videos = [v for v in work.get("videos", []) if v.get("yt")]
     if not videos:
         return []
@@ -197,6 +206,16 @@ if not works:
     st.error("No works found in data/works.json")
     st.stop()
 
+# Only allow works with at least MIN_VERSIONS_REQUIRED
+eligible_works = [w for w in works if has_min_versions(w, MIN_VERSIONS_REQUIRED)]
+
+if not eligible_works:
+    st.error(
+        f"No works have at least {MIN_VERSIONS_REQUIRED} versions. "
+        "Add more YouTube IDs to your catalog."
+    )
+    st.stop()
+
 # =========================
 # Controls
 # =========================
@@ -220,7 +239,7 @@ st.divider()
 # Mode Logic
 # =========================
 def set_random_work():
-    work = random.choice(works)
+    work = random.choice(eligible_works)
     st.session_state.current_work_id = work["id"]
     st.session_state.shuffle_seed += 1
     st.session_state.now_playing = None
@@ -250,10 +269,11 @@ else:
     matches = []
     if query.strip():
         q = query.lower().strip()
-        matches = [w for w in works if q in w["_search"]]
+        # Only show eligible works in search results
+        matches = [w for w in eligible_works if q in w["_search"]]
 
     if query.strip() and not matches:
-        st.info("No matches found.")
+        st.info(f"No matches found with ≥ {MIN_VERSIONS_REQUIRED} versions.")
 
     if matches:
         labels = {f'{w["title"]} — {w.get("composer","")}': w["id"] for w in matches}
@@ -269,7 +289,7 @@ else:
 # =========================
 # Resolve Current Work
 # =========================
-current = next((w for w in works if w["id"] == st.session_state.current_work_id), None)
+current = next((w for w in eligible_works if w["id"] == st.session_state.current_work_id), None)
 if not current:
     st.stop()
 
@@ -282,7 +302,10 @@ random.shuffle(versions)
 
 st.subheader("Blind set")
 st.write("Listen without knowing who is singing. Tick boxes while staying blind.")
-st.caption(f"{len(versions)} version(s) available for this aria in your catalog.")
+st.caption(
+    f"{len(versions)} version(s) available for this aria in your catalog "
+    f"(eligible: ≥ {MIN_VERSIONS_REQUIRED})."
+)
 
 # Playback stop
 if st.button("⏹ Stop playback", width="stretch"):
@@ -438,6 +461,7 @@ for idx, v in enumerate(versions, start=1):
         with csave2:
             if st.button("🧹 Clear", key=f"clear_{nk}", width="stretch"):
                 st.session_state.notes.pop(nk, None)
+                st.session_state.now_playing = None
                 st.success("Cleared. (Re-open to see defaults reset.)")
 
     # -------------------------
@@ -454,7 +478,6 @@ for idx, v in enumerate(versions, start=1):
 
         st.write("YouTube:", yt_url(vid))
 
-        # Show saved note summary (if any)
         note = st.session_state.notes.get(nk)
         if note:
             st.markdown("---")
@@ -483,6 +506,7 @@ with st.expander("Show work information"):
         "Total versions in catalog:",
         len([v for v in current.get("videos", []) if v.get("yt")]),
     )
+    st.write(f"Eligibility rule: ≥ {MIN_VERSIONS_REQUIRED} versions")
 
 # =========================
 # Optional Session Summary
