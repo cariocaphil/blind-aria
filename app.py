@@ -138,6 +138,7 @@ def yt_oembed(video_id: str):
 
 
 def pick_versions(work: dict, count: int):
+    # Only real IDs (no empty slots ever show up)
     videos = [v for v in work.get("videos", []) if v.get("yt")]
     if not videos:
         return []
@@ -149,6 +150,20 @@ def pick_versions(work: dict, count: int):
 
 def note_key_for(work_id: str, video_id: str) -> str:
     return f"{work_id}::{video_id}"
+
+
+def checkbox_group(title: str, options: list[str], selected: list[str], key_prefix: str):
+    """
+    Renders a set of checkboxes (multi-answer multiple choice) and returns the selected options.
+    """
+    st.markdown(f"**{title}**")
+    out = []
+    for opt in options:
+        k = f"{key_prefix}::{opt}"
+        default = opt in selected
+        if st.checkbox(opt, value=default, key=k):
+            out.append(opt)
+    return out
 
 
 # =========================
@@ -209,6 +224,7 @@ def set_random_work():
     st.session_state.current_work_id = work["id"]
     st.session_state.shuffle_seed += 1
     st.session_state.now_playing = None
+    # reset played markers for new work
     st.session_state.played_by_work[work["id"]] = set()
 
 
@@ -224,6 +240,7 @@ if mode == "Random aria":
 
     if st.session_state.current_work_id is None:
         set_random_work()
+
 else:
     query = st.text_input(
         "Search aria / opera / composer",
@@ -245,6 +262,7 @@ else:
         st.session_state.shuffle_seed += 1
         st.session_state.now_playing = None
 
+        # reset played markers for newly selected work
         wid = st.session_state.current_work_id
         st.session_state.played_by_work[wid] = set()
 
@@ -263,14 +281,16 @@ versions = pick_versions(current, int(versions_count))
 random.shuffle(versions)
 
 st.subheader("Blind set")
-st.write("Listen without knowing who is singing. Take notes while staying blind.")
+st.write("Listen without knowing who is singing. Tick boxes while staying blind.")
 st.caption(f"{len(versions)} version(s) available for this aria in your catalog.")
 
+# Playback stop
 if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
 
 st.divider()
 
+# Played set for current work
 played_set = st.session_state.played_by_work.setdefault(current["id"], set())
 
 # =========================
@@ -288,6 +308,7 @@ for idx, v in enumerate(versions, start=1):
     with c1:
         listen_label = "✅ Played" if is_played else "🎧 Listen"
         listen_type = "secondary" if is_played else "primary"
+
         if st.button(
             listen_label,
             key=f"listen_{current['id']}_{idx}",
@@ -310,64 +331,63 @@ for idx, v in enumerate(versions, start=1):
         yt_audio_only(vid, autoplay=True)
 
     # -------------------------
-    # Questionnaire Notepad
+    # Questionnaire Notepad (multi-answer)
     # -------------------------
     with st.expander("Notepad (blind questionnaire)", expanded=False):
-        st.markdown("#### 1) Voice production & timbre")
-        voice_prod = st.multiselect(
-            "Select all that apply",
+        voice_prod = checkbox_group(
+            "1) Voice production & timbre",
             VOICE_PRODUCTION_OPTIONS,
-            default=saved.get("voice_production", []),
-            key=f"voice_prod_{nk}",
+            saved.get("voice_production", []),
+            key_prefix=f"vp_{nk}",
         )
 
-        st.markdown("#### 2) Language & articulation")
-        language = st.multiselect(
-            "Select all that apply",
+        language = checkbox_group(
+            "2) Language & articulation",
             LANGUAGE_OPTIONS,
-            default=saved.get("language", []),
-            key=f"language_{nk}",
+            saved.get("language", []),
+            key_prefix=f"lang_{nk}",
         )
 
-        st.markdown("#### 3) Style & aesthetic")
-        style = st.multiselect(
-            "Select all that apply",
+        style = checkbox_group(
+            "3) Style & aesthetic",
             STYLE_OPTIONS,
-            default=saved.get("style", []),
-            key=f"style_{nk}",
+            saved.get("style", []),
+            key_prefix=f"style_{nk}",
         )
 
-        st.markdown("#### 4) Meaning, intent & connection")
-
-        st.markdown("**A. Intentional shaping**")
-        meaning_intent = st.multiselect(
-            "Select all that apply",
+        meaning_intent = checkbox_group(
+            "4A) Meaning, intent & connection — intentional shaping",
             MEANING_INTENT_OPTIONS,
-            default=saved.get("meaning_intent", []),
-            key=f"meaning_intent_{nk}",
+            saved.get("meaning_intent", []),
+            key_prefix=f"mi_{nk}",
         )
 
-        st.markdown("**B. Sense-making**")
-        sense_making = st.multiselect(
-            "Select all that apply",
+        sense_making = checkbox_group(
+            "4B) Meaning, intent & connection — sense-making",
             SENSE_MAKING_OPTIONS,
-            default=saved.get("sense_making", []),
-            key=f"sense_making_{nk}",
+            saved.get("sense_making", []),
+            key_prefix=f"sm_{nk}",
         )
 
-        st.markdown("**C. Transmission & connection**")
+        st.markdown("**4C) Transmission & connection (choose one)**")
         transmission_default = saved.get("transmission", "Neutral")
-        transmission_idx = TRANSMISSION_OPTIONS.index(transmission_default) if transmission_default in TRANSMISSION_OPTIONS else 2
+        transmission_idx = (
+            TRANSMISSION_OPTIONS.index(transmission_default)
+            if transmission_default in TRANSMISSION_OPTIONS
+            else 2
+        )
         transmission = st.radio(
-            "Choose one",
+            "How does it reach you?",
             TRANSMISSION_OPTIONS,
             index=transmission_idx,
-            key=f"transmission_{nk}",
+            key=f"trans_{nk}",
         )
 
-        st.markdown("**D. Anchor reflection**")
+        st.markdown("**4D) Anchor reflection (choose one)**")
         anchor_default = saved.get("anchor", "Unsure")
-        anchor_idx = ANCHOR_OPTIONS.index(anchor_default) if anchor_default in ANCHOR_OPTIONS else 1
+        anchor_idx = (
+            ANCHOR_OPTIONS.index(anchor_default) if anchor_default in ANCHOR_OPTIONS else 1
+        )
         anchor = st.radio(
             "I feel the singer believes what they are singing.",
             ANCHOR_OPTIONS,
@@ -376,18 +396,22 @@ for idx, v in enumerate(versions, start=1):
             key=f"anchor_{nk}",
         )
 
-        st.markdown("#### 5) Overall impression")
+        st.markdown("**5) Overall impression (choose one)**")
         impr_default = saved.get("impression", "Neutral")
-        impr_idx = IMPRESSION_OPTIONS.index(impr_default) if impr_default in IMPRESSION_OPTIONS else 2
+        impr_idx = (
+            IMPRESSION_OPTIONS.index(impr_default)
+            if impr_default in IMPRESSION_OPTIONS
+            else 2
+        )
         impression = st.radio(
-            "Choose one",
+            "Gut reaction",
             IMPRESSION_OPTIONS,
             index=impr_idx,
             horizontal=True,
-            key=f"impression_{nk}",
+            key=f"impr_{nk}",
         )
 
-        st.markdown("#### 6) Free note (optional)")
+        st.markdown("**6) Free note (optional)**")
         comment = st.text_area(
             "What caught your ear?",
             value=saved.get("comment", ""),
