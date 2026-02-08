@@ -17,9 +17,71 @@ st.set_page_config(
 )
 
 # =========================
+# Questionnaire Options
+# =========================
+VOICE_PRODUCTION_OPTIONS = [
+    "Clear diction",
+    "Legato line",
+    "Even vibrato",
+    "Breath-driven phrasing",
+    "Secure upper register",
+    "Warm timbre",
+    "Bright / metallic timbre",
+    "Dark / covered timbre",
+    "Heavy production",
+    "Flexible / agile",
+    "Nasal resonance audible",
+    "Croaky / “froggish” quality",
+]
+
+LANGUAGE_OPTIONS = [
+    "Text clearly understandable",
+    "Consonants very present",
+    "Vowels well shaped",
+    "Non-native accent perceptible",
+]
+
+STYLE_OPTIONS = [
+    "Bel canto oriented",
+    "Verismo oriented",
+    "Historically older style",
+    "Modern / international style",
+    "Dramatic / theatrical",
+    "Intimate / inward",
+]
+
+MEANING_INTENT_OPTIONS = [
+    "Musical intention feels clear",
+    "Phrasing feels purposeful",
+    "Dynamic shaping feels deliberate",
+    "Rubato feels meaningful",
+    "Text delivery feels intentional",
+    "I sense a clear point of view",
+]
+
+SENSE_MAKING_OPTIONS = [
+    "Dramatic situation feels clear",
+    "Emotional arc is understandable",
+    "The aria feels embedded in a story",
+    "I understand why this aria exists",
+]
+
+TRANSMISSION_OPTIONS = [
+    "Strongly reaches me",
+    "Reaches me at moments",
+    "Neutral",
+    "Emotionally distant",
+    "Feels mannered / performative",
+]
+
+ANCHOR_OPTIONS = ["Yes", "Unsure", "No"]
+
+IMPRESSION_OPTIONS = ["Loved it", "Convincing", "Neutral", "Distracting", "Not for me"]
+
+
+# =========================
 # Helpers
 # =========================
-
 @st.cache_data
 def load_catalog():
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
@@ -76,7 +138,6 @@ def yt_oembed(video_id: str):
 
 
 def pick_versions(work: dict, count: int):
-    # Only real IDs (no empty slots ever show up)
     videos = [v for v in work.get("videos", []) if v.get("yt")]
     if not videos:
         return []
@@ -84,6 +145,10 @@ def pick_versions(work: dict, count: int):
         random.shuffle(videos)
         return videos
     return random.sample(videos, count)
+
+
+def note_key_for(work_id: str, video_id: str) -> str:
+    return f"{work_id}::{video_id}"
 
 
 # =========================
@@ -102,6 +167,9 @@ if "played_by_work" not in st.session_state:
     # work_id -> set(video_id)
     st.session_state.played_by_work = {}
 
+if "notes" not in st.session_state:
+    # key: "work_id::video_id" -> questionnaire dict
+    st.session_state.notes = {}
 
 # =========================
 # UI Header
@@ -141,7 +209,6 @@ def set_random_work():
     st.session_state.current_work_id = work["id"]
     st.session_state.shuffle_seed += 1
     st.session_state.now_playing = None
-    # reset played markers for new work
     st.session_state.played_by_work[work["id"]] = set()
 
 
@@ -157,7 +224,6 @@ if mode == "Random aria":
 
     if st.session_state.current_work_id is None:
         set_random_work()
-
 else:
     query = st.text_input(
         "Search aria / opera / composer",
@@ -179,7 +245,6 @@ else:
         st.session_state.shuffle_seed += 1
         st.session_state.now_playing = None
 
-        # reset played markers for newly selected work
         wid = st.session_state.current_work_id
         st.session_state.played_by_work[wid] = set()
 
@@ -198,16 +263,14 @@ versions = pick_versions(current, int(versions_count))
 random.shuffle(versions)
 
 st.subheader("Blind set")
-st.write("Listen without knowing who is singing. Reveal only after listening.")
+st.write("Listen without knowing who is singing. Take notes while staying blind.")
 st.caption(f"{len(versions)} version(s) available for this aria in your catalog.")
 
-# Playback stop
 if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
 
 st.divider()
 
-# Played set for current work
 played_set = st.session_state.played_by_work.setdefault(current["id"], set())
 
 # =========================
@@ -216,14 +279,15 @@ played_set = st.session_state.played_by_work.setdefault(current["id"], set())
 for idx, v in enumerate(versions, start=1):
     vid = v["yt"]
     is_played = vid in played_set
+    nk = note_key_for(current["id"], vid)
+    saved = st.session_state.notes.get(nk, {})
 
-    st.markdown(f"### Version {idx}")
+    st.markdown(f"### Take {idx}")
 
     c1, c2 = st.columns([1, 1])
     with c1:
         listen_label = "✅ Played" if is_played else "🎧 Listen"
         listen_type = "secondary" if is_played else "primary"
-
         if st.button(
             listen_label,
             key=f"listen_{current['id']}_{idx}",
@@ -245,20 +309,142 @@ for idx, v in enumerate(versions, start=1):
     if st.session_state.now_playing == vid:
         yt_audio_only(vid, autoplay=True)
 
+    # -------------------------
+    # Questionnaire Notepad
+    # -------------------------
+    with st.expander("Notepad (blind questionnaire)", expanded=False):
+        st.markdown("#### 1) Voice production & timbre")
+        voice_prod = st.multiselect(
+            "Select all that apply",
+            VOICE_PRODUCTION_OPTIONS,
+            default=saved.get("voice_production", []),
+            key=f"voice_prod_{nk}",
+        )
+
+        st.markdown("#### 2) Language & articulation")
+        language = st.multiselect(
+            "Select all that apply",
+            LANGUAGE_OPTIONS,
+            default=saved.get("language", []),
+            key=f"language_{nk}",
+        )
+
+        st.markdown("#### 3) Style & aesthetic")
+        style = st.multiselect(
+            "Select all that apply",
+            STYLE_OPTIONS,
+            default=saved.get("style", []),
+            key=f"style_{nk}",
+        )
+
+        st.markdown("#### 4) Meaning, intent & connection")
+
+        st.markdown("**A. Intentional shaping**")
+        meaning_intent = st.multiselect(
+            "Select all that apply",
+            MEANING_INTENT_OPTIONS,
+            default=saved.get("meaning_intent", []),
+            key=f"meaning_intent_{nk}",
+        )
+
+        st.markdown("**B. Sense-making**")
+        sense_making = st.multiselect(
+            "Select all that apply",
+            SENSE_MAKING_OPTIONS,
+            default=saved.get("sense_making", []),
+            key=f"sense_making_{nk}",
+        )
+
+        st.markdown("**C. Transmission & connection**")
+        transmission_default = saved.get("transmission", "Neutral")
+        transmission_idx = TRANSMISSION_OPTIONS.index(transmission_default) if transmission_default in TRANSMISSION_OPTIONS else 2
+        transmission = st.radio(
+            "Choose one",
+            TRANSMISSION_OPTIONS,
+            index=transmission_idx,
+            key=f"transmission_{nk}",
+        )
+
+        st.markdown("**D. Anchor reflection**")
+        anchor_default = saved.get("anchor", "Unsure")
+        anchor_idx = ANCHOR_OPTIONS.index(anchor_default) if anchor_default in ANCHOR_OPTIONS else 1
+        anchor = st.radio(
+            "I feel the singer believes what they are singing.",
+            ANCHOR_OPTIONS,
+            index=anchor_idx,
+            horizontal=True,
+            key=f"anchor_{nk}",
+        )
+
+        st.markdown("#### 5) Overall impression")
+        impr_default = saved.get("impression", "Neutral")
+        impr_idx = IMPRESSION_OPTIONS.index(impr_default) if impr_default in IMPRESSION_OPTIONS else 2
+        impression = st.radio(
+            "Choose one",
+            IMPRESSION_OPTIONS,
+            index=impr_idx,
+            horizontal=True,
+            key=f"impression_{nk}",
+        )
+
+        st.markdown("#### 6) Free note (optional)")
+        comment = st.text_area(
+            "What caught your ear?",
+            value=saved.get("comment", ""),
+            placeholder="e.g. 'Purposeful phrasing, but emotionally distant…'",
+            key=f"comment_{nk}",
+        )
+
+        csave1, csave2 = st.columns([1, 1])
+        with csave1:
+            if st.button("💾 Save", key=f"save_{nk}", width="stretch"):
+                st.session_state.notes[nk] = {
+                    "voice_production": voice_prod,
+                    "language": language,
+                    "style": style,
+                    "meaning_intent": meaning_intent,
+                    "sense_making": sense_making,
+                    "transmission": transmission,
+                    "anchor": anchor,
+                    "impression": impression,
+                    "comment": comment.strip(),
+                }
+                st.success("Saved.")
+
+        with csave2:
+            if st.button("🧹 Clear", key=f"clear_{nk}", width="stretch"):
+                st.session_state.notes.pop(nk, None)
+                st.success("Cleared. (Re-open to see defaults reset.)")
+
+    # -------------------------
+    # Reveal
+    # -------------------------
     with st.expander("Reveal"):
         st.write("Work:", f'{current["title"]} — {current.get("composer","")}')
         meta = yt_oembed(vid)
         if meta:
             st.markdown(f"**Title:** {meta.get('title', '—')}")
             st.markdown(f"**Channel:** {meta.get('author_name', '—')}")
-            # Optional (spoiler-heavy):
-            # thumb = meta.get("thumbnail_url")
-            # if thumb:
-            #     st.image(thumb, caption="YouTube thumbnail", width="stretch")
         else:
             st.info("Could not fetch YouTube metadata (network/rate limit/removed video).")
 
         st.write("YouTube:", yt_url(vid))
+
+        # Show saved note summary (if any)
+        note = st.session_state.notes.get(nk)
+        if note:
+            st.markdown("---")
+            st.markdown("#### Your blind notes (summary)")
+            st.write("Voice production:", ", ".join(note.get("voice_production", [])) or "—")
+            st.write("Language:", ", ".join(note.get("language", [])) or "—")
+            st.write("Style:", ", ".join(note.get("style", [])) or "—")
+            st.write("Intent:", ", ".join(note.get("meaning_intent", [])) or "—")
+            st.write("Sense-making:", ", ".join(note.get("sense_making", [])) or "—")
+            st.write("Transmission:", note.get("transmission", "—"))
+            st.write("Anchor:", note.get("anchor", "—"))
+            st.write("Impression:", note.get("impression", "—"))
+            if note.get("comment"):
+                st.write("Free note:", note["comment"])
 
     st.divider()
 
@@ -266,10 +452,31 @@ for idx, v in enumerate(versions, start=1):
 # Optional Work Info
 # =========================
 with st.expander("Show work information"):
-    st.write("Title:", current["title"])
+    st.write("Title:", current.get("title", ""))
     st.write("Composer:", current.get("composer", ""))
     st.write("Aliases:", ", ".join(current.get("aliases", [])))
     st.write(
         "Total versions in catalog:",
         len([v for v in current.get("videos", []) if v.get("yt")]),
     )
+
+# =========================
+# Optional Session Summary
+# =========================
+with st.expander("Session summary (this aria)", expanded=False):
+    rows = []
+    for idx, v in enumerate(versions, start=1):
+        vid = v["yt"]
+        nk = note_key_for(current["id"], vid)
+        note = st.session_state.notes.get(nk)
+        rows.append(
+            {
+                "Take": idx,
+                "Played": "Yes" if vid in played_set else "No",
+                "Impression": (note or {}).get("impression", ""),
+                "Transmission": (note or {}).get("transmission", ""),
+                "Anchor": (note or {}).get("anchor", ""),
+                "Notes saved": "Yes" if note else "No",
+            }
+        )
+    st.dataframe(rows, width="stretch")
