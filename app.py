@@ -98,6 +98,10 @@ if "now_playing" not in st.session_state:
 if "shuffle_seed" not in st.session_state:
     st.session_state.shuffle_seed = 0
 
+if "played_by_work" not in st.session_state:
+    # work_id -> set(video_id)
+    st.session_state.played_by_work = {}
+
 
 # =========================
 # UI Header
@@ -137,6 +141,8 @@ def set_random_work():
     st.session_state.current_work_id = work["id"]
     st.session_state.shuffle_seed += 1
     st.session_state.now_playing = None
+    # reset played markers for new work
+    st.session_state.played_by_work[work["id"]] = set()
 
 
 if mode == "Random aria":
@@ -173,6 +179,10 @@ else:
         st.session_state.shuffle_seed += 1
         st.session_state.now_playing = None
 
+        # reset played markers for newly selected work
+        wid = st.session_state.current_work_id
+        st.session_state.played_by_work[wid] = set()
+
 # =========================
 # Resolve Current Work
 # =========================
@@ -197,22 +207,31 @@ if st.button("⏹ Stop playback", width="stretch"):
 
 st.divider()
 
+# Played set for current work
+played_set = st.session_state.played_by_work.setdefault(current["id"], set())
+
 # =========================
 # Versions Loop
 # =========================
 for idx, v in enumerate(versions, start=1):
     vid = v["yt"]
+    is_played = vid in played_set
 
     st.markdown(f"### Version {idx}")
 
     c1, c2 = st.columns([1, 1])
     with c1:
+        listen_label = "✅ Played" if is_played else "🎧 Listen"
+        listen_type = "secondary" if is_played else "primary"
+
         if st.button(
-            "🎧 Listen",
+            listen_label,
             key=f"listen_{current['id']}_{idx}",
             width="stretch",
+            type=listen_type,
         ):
             st.session_state.now_playing = vid
+            played_set.add(vid)
 
     with c2:
         if st.button(
@@ -232,10 +251,10 @@ for idx, v in enumerate(versions, start=1):
         if meta:
             st.markdown(f"**Title:** {meta.get('title', '—')}")
             st.markdown(f"**Channel:** {meta.get('author_name', '—')}")
-            # Optional: spoiler-heavy
+            # Optional (spoiler-heavy):
             # thumb = meta.get("thumbnail_url")
             # if thumb:
-            #     st.image(thumb, caption="YouTube thumbnail", use_container_width=True)
+            #     st.image(thumb, caption="YouTube thumbnail", width="stretch")
         else:
             st.info("Could not fetch YouTube metadata (network/rate limit/removed video).")
 
