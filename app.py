@@ -184,23 +184,30 @@ def get_supabase_url_key():
 
 def create_sb_client(access_token: Optional[str] = None):
     """
-    Creates a Supabase client.
-    If access_token is provided, it FORCE-sets Authorization header for PostgREST calls.
+    Create a Supabase client.
+    If access_token is provided, authenticate PostgREST requests with it (RLS-safe),
+    without using ClientOptions (avoids version incompatibilities).
     """
     try:
         from supabase import create_client  # type: ignore
-        from supabase.lib.client_options import ClientOptions  # type: ignore
     except Exception:
         st.error("Supabase package not installed. Add `supabase>=2.0.0` to requirements.txt.")
         st.stop()
 
     url, anon_key = get_supabase_url_key()
+    sb = create_client(url, anon_key)
 
     if access_token:
-        opts = ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
-        return create_client(url, anon_key, options=opts)
+        # This is the key part: DB calls go through PostgREST
+        sb.postgrest.auth(access_token)
 
-    return create_client(url, anon_key)
+        # Optional: if you ever use Storage later
+        try:
+            sb.storage.auth(access_token)
+        except Exception:
+            pass
+
+    return sb
 
 
 def is_logged_in() -> bool:
@@ -214,10 +221,10 @@ def sb_user_id() -> Optional[str]:
 
 def sb_authed_client():
     auth = st.session_state.get("sb_auth") or {}
-    access_token = auth.get("access_token")
-    if not access_token:
+    token = auth.get("access_token")
+    if not token:
         return create_sb_client(None)
-    return create_sb_client(access_token)
+    return create_sb_client(token)
 
 
 def require_login_block() -> None:
