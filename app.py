@@ -163,7 +163,7 @@ def checkbox_group(title: str, options: list[str], selected: list[str], key_pref
 
 
 # =========================
-# Supabase (lazy) helpers
+# Supabase (robust auth header client)
 # =========================
 def supabase_available() -> bool:
     try:
@@ -173,24 +173,34 @@ def supabase_available() -> bool:
         return False
 
 
-def get_supabase_client():
-    """
-    Creates a Supabase client using publishable key (anon key).
-    Lazy import so Solo mode doesn’t crash if supabase isn’t installed.
-    """
-    try:
-        from supabase import create_client  # type: ignore
-    except Exception:
-        st.error("Supabase package not installed. Add `supabase>=2.0.0` to requirements.txt.")
-        st.stop()
-
+def get_supabase_url_key():
     url = st.secrets.get("SUPABASE_URL")
     key = st.secrets.get("SUPABASE_ANON_KEY")
     if not url or not key:
         st.error("Missing SUPABASE_URL / SUPABASE_ANON_KEY in Streamlit secrets.")
         st.stop()
+    return url, key
 
-    return create_client(url, key)
+
+def create_sb_client(access_token: Optional[str] = None):
+    """
+    Creates a Supabase client.
+    If access_token is provided, it FORCE-sets Authorization header for PostgREST calls.
+    """
+    try:
+        from supabase import create_client  # type: ignore
+        from supabase.lib.client_options import ClientOptions  # type: ignore
+    except Exception:
+        st.error("Supabase package not installed. Add `supabase>=2.0.0` to requirements.txt.")
+        st.stop()
+
+    url, anon_key = get_supabase_url_key()
+
+    if access_token:
+        opts = ClientOptions(headers={"Authorization": f"Bearer {access_token}"})
+        return create_client(url, anon_key, options=opts)
+
+    return create_client(url, anon_key)
 
 
 def is_logged_in() -> bool:
@@ -202,37 +212,15 @@ def sb_user_id() -> Optional[str]:
     return auth.get("user_id")
 
 
-def sb_apply_access_token(sb, access_token: str, refresh_token: Optional[str] = None):
-    """
-    IMPORTANT:
-    For RLS to work, PostgREST must receive Authorization: Bearer <JWT>.
-    supabase-py sometimes needs postgrest.auth(token) explicitly.
-    """
-    # Best effort: set auth session
-    try:
-        if refresh_token:
-            sb.auth.set_session(access_token, refresh_token)
-        else:
-            # Some flows might not have refresh token; still set PostgREST auth below.
-            pass
-    except Exception:
-        pass
-
-    # Crucial: set token on postgrest client for DB calls
-    try:
-        sb.postgrest.auth(access_token)
-    except Exception:
-        # Different client versions may differ; if this fails, inserts may behave as anon.
-        pass
+def sb_authed_client():
+    auth = st.session_state.get("sb_auth") or {}
+    access_token = auth.get("access_token")
+    if not access_token:
+        return create_sb_client(None)
+    return create_sb_client(access_token)
 
 
 def require_login_block() -> None:
-    """
-    OTP CODE flow:
-      1) enter email -> send OTP email
-      2) enter code -> verify OTP -> store tokens in st.session_state
-    No redirect URLs involved.
-    """
     st.subheader("Sign in to play with someone")
     st.caption("Solo mode needs no login. Party mode requires login (email code).")
 
@@ -240,7 +228,7 @@ def require_login_block() -> None:
         st.error("Missing dependency: add `supabase>=2.0.0` to requirements.txt and redeploy.")
         st.stop()
 
-    sb = get_supabase_client()
+    sb = create_sb_client(None)
 
     email = st.text_input("Email", key="otp_email", placeholder="you@example.com")
     c1, c2 = st.columns([1, 1])
@@ -276,7 +264,6 @@ def require_login_block() -> None:
                         {"email": sent_email, "token": code.strip(), "type": "email"}
                     )
 
-                    # Tolerant extraction (object or dict)
                     session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
                     user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
 
@@ -300,9 +287,6 @@ def require_login_block() -> None:
                         st.error("Login succeeded but access token/user_id missing. Check Supabase response.")
                         st.stop()
 
-                    # Ensure this very client is authenticated (helps immediately)
-                    sb_apply_access_token(sb, access_token, refresh_token)
-
                     st.session_state["sb_auth"] = {
                         "user_id": user_id,
                         "email": sent_email,
@@ -316,27 +300,16 @@ def require_login_block() -> None:
                     st.error(f"Verification failed: {e}")
 
 
-def sb_authed_client():
-    sb = get_supabase_client()
-    auth = st.session_state.get("sb_auth") or {}
-    access_token = auth.get("access_token")
-    refresh_token = auth.get("refresh_token")
-    if access_token:
-        sb_apply_access_token(sb, access_token, refresh_token)
-    return sb
-
-
 # =========================
 # Supabase DB operations
 # =========================
 def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
-    # Insert session
+    # IMPORTANT: insert MUST run with Authorization header set (sb_authed_client does this)
     res = sb.table("game_sessions").insert(
-    {"title": title, "work_id": work_id, "video_ids": video_ids}
-).execute()
+        {"owner_id": owner_id, "title": title, "work_id": work_id, "video_ids": video_ids}
+    ).execute()
     session_id = res.data[0]["id"]
 
-    # Insert membership (owner)
     sb.table("session_members").insert(
         {"session_id": session_id, "user_id": owner_id, "role": "owner"}
     ).execute()
@@ -404,7 +377,7 @@ if "played_by_work" not in st.session_state:
     st.session_state.played_by_work = {}
 
 if "notes" not in st.session_state:
-    st.session_state.notes = {}  # solo-mode notes only
+    st.session_state.notes = {}
 
 if "wants_party_mode" not in st.session_state:
     st.session_state.wants_party_mode = False
@@ -422,7 +395,6 @@ if not eligible_works:
     st.error(f"No works have at least {MIN_VERSIONS_REQUIRED} versions.")
     st.stop()
 
-# Party mode if: user clicked it OR URL contains ?session=...
 session_param = st.query_params.get("session")
 party_mode = bool(session_param) or bool(st.session_state.wants_party_mode)
 
@@ -446,7 +418,6 @@ with b3:
 
 st.divider()
 
-# Auth gate
 if party_mode and not is_logged_in():
     require_login_block()
     st.stop()
@@ -460,13 +431,12 @@ party_user_id = None
 sb = None
 
 if party_mode:
-    sb = sb_authed_client()
+    sb = sb_authed_client()  # <- AUTH HEADER CLIENT
     party_user_id = sb_user_id()
     if not party_user_id:
         st.error("Logged in but user id missing.")
         st.stop()
 
-    # Join existing session
     if session_param:
         party_session_id = session_param
         try:
@@ -476,7 +446,6 @@ if party_mode:
             st.error(f"Could not join/load session: {e}")
             st.stop()
 
-    # Create new session
     if not party_session:
         st.subheader("Party mode")
         st.write("Create a shared listening session and send the link to a friend.")
@@ -587,7 +556,6 @@ else:
     random.shuffle(versions)
     mode_label = "Solo"
 
-# Ensure at least 3 takes
 if len(versions) < MIN_VERSIONS_REQUIRED:
     st.error("This selection has fewer than 3 takes. Add more video IDs in works.json.")
     st.stop()
@@ -597,7 +565,7 @@ if len(versions) < MIN_VERSIONS_REQUIRED:
 # =========================
 st.subheader(mode_label)
 st.write(f"**{current_work['title']}** — {current_work.get('composer','')}")
-st.caption(f"Takes: {len(versions)} (eligibility rule: ≥ {MIN_VERSIONS_REQUIRED} versions in catalog)")
+st.caption(f"Takes: {len(versions)}")
 
 if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
