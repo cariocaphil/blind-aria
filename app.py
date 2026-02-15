@@ -1,7 +1,7 @@
 import json
 import random
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, List
 
 import requests
 import streamlit as st
@@ -14,6 +14,7 @@ DATA_PATH = Path(__file__).parent / "data" / "works.json"
 MIN_VERSIONS_REQUIRED = 3
 
 st.set_page_config(page_title="Blind Aria Trainer", layout="centered")
+
 
 # =========================
 # Questionnaire Options
@@ -201,15 +202,27 @@ def sb_user_id() -> Optional[str]:
     return auth.get("user_id")
 
 
-def sb_set_session_tokens(sb, access_token: str, refresh_token: str):
+def sb_apply_access_token(sb, access_token: str, refresh_token: Optional[str] = None):
     """
-    Ensures subsequent DB requests use the logged-in JWT (so RLS works).
+    IMPORTANT:
+    For RLS to work, PostgREST must receive Authorization: Bearer <JWT>.
+    supabase-py sometimes needs postgrest.auth(token) explicitly.
     """
+    # Best effort: set auth session
     try:
-        sb.auth.set_session(access_token, refresh_token)
+        if refresh_token:
+            sb.auth.set_session(access_token, refresh_token)
+        else:
+            # Some flows might not have refresh token; still set PostgREST auth below.
+            pass
     except Exception:
-        # If set_session signature differs in a future client, you’ll see it immediately.
-        # In practice, supabase-py supports it.
+        pass
+
+    # Crucial: set token on postgrest client for DB calls
+    try:
+        sb.postgrest.auth(access_token)
+    except Exception:
+        # Different client versions may differ; if this fails, inserts may behave as anon.
         pass
 
 
@@ -217,7 +230,7 @@ def require_login_block() -> None:
     """
     OTP CODE flow:
       1) enter email -> send OTP email
-      2) enter code -> verify OTP -> store session tokens in st.session_state
+      2) enter code -> verify OTP -> store tokens in st.session_state
     No redirect URLs involved.
     """
     st.subheader("Sign in to play with someone")
@@ -238,8 +251,6 @@ def require_login_block() -> None:
                 st.error("Enter an email.")
             else:
                 try:
-                    # This triggers the email. If “Confirm email” is enabled,
-                    # brand-new users might get a signup confirmation instead.
                     sb.auth.sign_in_with_otp({"email": email.strip()})
                     st.session_state["otp_email_sent"] = email.strip()
                     st.success("Email sent. Copy the code from the email and paste it below.")
@@ -261,29 +272,36 @@ def require_login_block() -> None:
                 st.error("Enter the code.")
             else:
                 try:
-                    # verify_otp type for email OTP is "email"
                     resp = sb.auth.verify_otp(
                         {"email": sent_email, "token": code.strip(), "type": "email"}
                     )
 
-                    # Extract tokens + user id from resp (object/dict tolerant)
+                    # Tolerant extraction (object or dict)
                     session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
                     user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
 
-                    access_token = getattr(session, "access_token", None) if session else None
-                    refresh_token = getattr(session, "refresh_token", None) if session else None
-                    user_id = getattr(user, "id", None) if user else None
+                    access_token = None
+                    refresh_token = None
+                    user_id = None
 
-                    # Some client versions return dict-like
-                    if isinstance(session, dict):
-                        access_token = access_token or session.get("access_token")
-                        refresh_token = refresh_token or session.get("refresh_token")
-                    if isinstance(user, dict):
-                        user_id = user_id or user.get("id")
+                    if session is not None:
+                        access_token = getattr(session, "access_token", None)
+                        refresh_token = getattr(session, "refresh_token", None)
+                        if isinstance(session, dict):
+                            access_token = access_token or session.get("access_token")
+                            refresh_token = refresh_token or session.get("refresh_token")
 
-                    if not access_token or not refresh_token or not user_id:
-                        st.error("Login succeeded but tokens/user_id were missing. Check Supabase client response.")
+                    if user is not None:
+                        user_id = getattr(user, "id", None)
+                        if isinstance(user, dict):
+                            user_id = user_id or user.get("id")
+
+                    if not access_token or not user_id:
+                        st.error("Login succeeded but access token/user_id missing. Check Supabase response.")
                         st.stop()
+
+                    # Ensure this very client is authenticated (helps immediately)
+                    sb_apply_access_token(sb, access_token, refresh_token)
 
                     st.session_state["sb_auth"] = {
                         "user_id": user_id,
@@ -293,20 +311,18 @@ def require_login_block() -> None:
                     }
                     st.success("Logged in.")
                     st.rerun()
+
                 except Exception as e:
                     st.error(f"Verification failed: {e}")
 
 
 def sb_authed_client():
-    """
-    Supabase client with JWT session set.
-    """
     sb = get_supabase_client()
     auth = st.session_state.get("sb_auth") or {}
     access_token = auth.get("access_token")
     refresh_token = auth.get("refresh_token")
-    if access_token and refresh_token:
-        sb_set_session_tokens(sb, access_token, refresh_token)
+    if access_token:
+        sb_apply_access_token(sb, access_token, refresh_token)
     return sb
 
 
@@ -314,11 +330,13 @@ def sb_authed_client():
 # Supabase DB operations
 # =========================
 def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
+    # Insert session
     res = sb.table("game_sessions").insert(
         {"owner_id": owner_id, "title": title, "work_id": work_id, "video_ids": video_ids}
     ).execute()
     session_id = res.data[0]["id"]
 
+    # Insert membership (owner)
     sb.table("session_members").insert(
         {"session_id": session_id, "user_id": owner_id, "role": "owner"}
     ).execute()
@@ -408,7 +426,6 @@ if not eligible_works:
 session_param = st.query_params.get("session")
 party_mode = bool(session_param) or bool(st.session_state.wants_party_mode)
 
-# Top buttons
 b1, b2, b3 = st.columns([1, 1, 1])
 with b1:
     if st.button("🎧 Solo (no login)", width="stretch"):
@@ -449,6 +466,7 @@ if party_mode:
         st.error("Logged in but user id missing.")
         st.stop()
 
+    # Join existing session
     if session_param:
         party_session_id = session_param
         try:
@@ -458,6 +476,7 @@ if party_mode:
             st.error(f"Could not join/load session: {e}")
             st.stop()
 
+    # Create new session
     if not party_session:
         st.subheader("Party mode")
         st.write("Create a shared listening session and send the link to a friend.")
@@ -509,7 +528,7 @@ if party_mode:
 # =========================
 if party_mode:
     work_id = party_session["work_id"]
-    shared_video_ids = party_session["video_ids"] or []
+    shared_video_ids = party_session.get("video_ids") or []
     current_work = next((w for w in works if w["id"] == work_id), None)
     if not current_work:
         st.error("Session references a work_id not found in your local works.json.")
@@ -568,7 +587,7 @@ else:
     random.shuffle(versions)
     mode_label = "Solo"
 
-# Sanity: ensure at least 3 takes
+# Ensure at least 3 takes
 if len(versions) < MIN_VERSIONS_REQUIRED:
     st.error("This selection has fewer than 3 takes. Add more video IDs in works.json.")
     st.stop()
@@ -578,7 +597,7 @@ if len(versions) < MIN_VERSIONS_REQUIRED:
 # =========================
 st.subheader(mode_label)
 st.write(f"**{current_work['title']}** — {current_work.get('composer','')}")
-st.caption(f"Takes: {len(versions)} (aria eligibility rule: ≥ {MIN_VERSIONS_REQUIRED} versions in catalog)")
+st.caption(f"Takes: {len(versions)} (eligibility rule: ≥ {MIN_VERSIONS_REQUIRED} versions in catalog)")
 
 if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
@@ -716,4 +735,4 @@ for idx, vid in enumerate(versions, start=1):
 
 if party_mode:
     st.subheader("Share this session")
-    st.caption("Send the URL in your browser (it contains ?session=...). Your friend will log in with a code and join.")
+    st.caption("Send the URL in your browser (it contains ?session=...). Your friend logs in with a code and joins.")
