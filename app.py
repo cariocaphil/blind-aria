@@ -332,8 +332,8 @@ def sb_authed_client():
 def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
     # Insert session
     res = sb.table("game_sessions").insert(
-        {"owner_id": owner_id, "title": title, "work_id": work_id, "video_ids": video_ids}
-    ).execute()
+    {"title": title, "work_id": work_id, "video_ids": video_ids}
+).execute()
     session_id = res.data[0]["id"]
 
     # Insert membership (owner)
