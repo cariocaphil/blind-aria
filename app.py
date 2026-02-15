@@ -313,7 +313,7 @@ def require_login_block() -> None:
 def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
     # IMPORTANT: insert MUST run with Authorization header set (sb_authed_client does this)
     res = sb.table("game_sessions").insert(
-        {"owner_id": owner_id, "title": title, "work_id": work_id, "video_ids": video_ids}
+        {"title": title, "work_id": work_id, "video_ids": video_ids}
     ).execute()
     session_id = res.data[0]["id"]
 
