@@ -1,11 +1,12 @@
 import json
 import random
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
+
 
 # =========================
 # Configuration
@@ -83,6 +84,10 @@ IMPRESSION_OPTIONS = ["Loved it", "Convincing", "Neutral", "Distracting", "Not f
 # =========================
 @st.cache_data
 def load_catalog() -> List[dict]:
+    if not DATA_PATH.exists():
+        st.error(f"Missing catalog file at: {DATA_PATH}")
+        st.stop()
+
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     works = data.get("works", [])
     for w in works:
@@ -97,6 +102,10 @@ def yt_url(video_id: str) -> str:
 
 
 def yt_audio_only(video_id: str, autoplay: bool = True):
+    """
+    "Level 2" hiding: tiny invisible embed with autoplay.
+    Not true DRM, but avoids showing the actual YouTube player UI.
+    """
     auto = "1" if autoplay else "0"
     html = f"""
     <div style="height:0; overflow:hidden;">
@@ -113,7 +122,7 @@ def yt_audio_only(video_id: str, autoplay: bool = True):
 
 
 @st.cache_data(ttl=24 * 3600)
-def yt_oembed(video_id: str):
+def yt_oembed(video_id: str) -> Optional[dict]:
     try:
         r = requests.get(
             "https://www.youtube.com/oembed",
@@ -156,14 +165,46 @@ def checkbox_group(title: str, options: list[str], selected: list[str], key_pref
     out = []
     for opt in options:
         k = f"{key_prefix}::{opt}"
-        default = opt in selected
+        default = opt in (selected or [])
         if st.checkbox(opt, value=default, key=k):
             out.append(opt)
     return out
 
 
 # =========================
-# Supabase (robust auth header client)
+# Streamlit query params (robust across versions)
+# =========================
+def get_session_param() -> Optional[str]:
+    # New API
+    try:
+        val = st.query_params.get("session")
+        if isinstance(val, list):
+            return val[0] if val else None
+        return val
+    except Exception:
+        # Old API
+        qp = st.experimental_get_query_params()
+        vals = qp.get("session")
+        return vals[0] if vals else None
+
+
+def set_session_param(session_id: str) -> None:
+    try:
+        st.query_params["session"] = session_id
+    except Exception:
+        st.experimental_set_query_params(session=session_id)
+
+
+def clear_session_param() -> None:
+    try:
+        if "session" in st.query_params:
+            st.query_params.pop("session")
+    except Exception:
+        st.experimental_set_query_params()
+
+
+# =========================
+# Supabase (no ClientOptions; PostgREST auth token)
 # =========================
 def supabase_available() -> bool:
     try:
@@ -186,7 +227,7 @@ def create_sb_client(access_token: Optional[str] = None):
     """
     Create a Supabase client.
     If access_token is provided, authenticate PostgREST requests with it (RLS-safe),
-    without using ClientOptions (avoids version incompatibilities).
+    without ClientOptions (avoids version incompatibilities).
     """
     try:
         from supabase import create_client  # type: ignore
@@ -198,10 +239,10 @@ def create_sb_client(access_token: Optional[str] = None):
     sb = create_client(url, anon_key)
 
     if access_token:
-        # This is the key part: DB calls go through PostgREST
+        # DB calls go through PostgREST (this is what makes RLS auth.uid() work)
         sb.postgrest.auth(access_token)
 
-        # Optional: if you ever use Storage later
+        # Optional for future use (Storage etc.)
         try:
             sb.storage.auth(access_token)
         except Exception:
@@ -227,99 +268,22 @@ def sb_authed_client():
     return create_sb_client(token)
 
 
-def require_login_block() -> None:
-    st.subheader("Sign in to play with someone")
-    st.caption("Solo mode needs no login. Party mode requires login (email code).")
-
-    if not supabase_available():
-        st.error("Missing dependency: add `supabase>=2.0.0` to requirements.txt and redeploy.")
-        st.stop()
-
-    sb = create_sb_client(None)
-
-    email = st.text_input("Email", key="otp_email", placeholder="you@example.com")
-    c1, c2 = st.columns([1, 1])
-
-    with c1:
-        if st.button("Send code", width="stretch"):
-            if not email.strip():
-                st.error("Enter an email.")
-            else:
-                try:
-                    sb.auth.sign_in_with_otp({"email": email.strip()})
-                    st.session_state["otp_email_sent"] = email.strip()
-                    st.success("Email sent. Copy the code from the email and paste it below.")
-                except Exception as e:
-                    st.error(f"Could not send OTP: {e}")
-
-    with c2:
-        if st.button("Use solo mode instead", width="stretch"):
-            st.session_state["wants_party_mode"] = False
-            if "session" in st.query_params:
-                st.query_params.pop("session")
-            st.rerun()
-
-    sent_email = st.session_state.get("otp_email_sent")
-    if sent_email:
-        code = st.text_input("Code", key="otp_code", placeholder="123456")
-        if st.button("Verify code", width="stretch"):
-            if not code.strip():
-                st.error("Enter the code.")
-            else:
-                try:
-                    resp = sb.auth.verify_otp(
-                        {"email": sent_email, "token": code.strip(), "type": "email"}
-                    )
-
-                    session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
-                    user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
-
-                    access_token = None
-                    refresh_token = None
-                    user_id = None
-
-                    if session is not None:
-                        access_token = getattr(session, "access_token", None)
-                        refresh_token = getattr(session, "refresh_token", None)
-                        if isinstance(session, dict):
-                            access_token = access_token or session.get("access_token")
-                            refresh_token = refresh_token or session.get("refresh_token")
-
-                    if user is not None:
-                        user_id = getattr(user, "id", None)
-                        if isinstance(user, dict):
-                            user_id = user_id or user.get("id")
-
-                    if not access_token or not user_id:
-                        st.error("Login succeeded but access token/user_id missing. Check Supabase response.")
-                        st.stop()
-
-                    st.session_state["sb_auth"] = {
-                        "user_id": user_id,
-                        "email": sent_email,
-                        "access_token": access_token,
-                        "refresh_token": refresh_token,
-                    }
-                    st.success("Logged in.")
-                    st.rerun()
-
-                except Exception as e:
-                    st.error(f"Verification failed: {e}")
-
-
 # =========================
 # Supabase DB operations
 # =========================
-def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
-    # IMPORTANT: insert MUST run with Authorization header set (sb_authed_client does this)
+def create_party_session(sb, title: str, work_id: str, video_ids: list[str]) -> str:
+    # IMPORTANT: do NOT send owner_id; DB default should set owner_id = auth.uid()
     res = sb.table("game_sessions").insert(
         {"title": title, "work_id": work_id, "video_ids": video_ids}
     ).execute()
     session_id = res.data[0]["id"]
 
-    sb.table("session_members").insert(
-        {"session_id": session_id, "user_id": owner_id, "role": "owner"}
-    ).execute()
+    # insert membership row
+    owner_id = sb_user_id()
+    if owner_id:
+        sb.table("session_members").insert(
+            {"session_id": session_id, "user_id": owner_id, "role": "owner"}
+        ).execute()
 
     return session_id
 
@@ -372,7 +336,90 @@ def load_note(sb, session_id: str, user_id: str, work_id: str, video_id: str) ->
 
 
 # =========================
-# Streamlit State
+# Auth UI (OTP code flow)
+# =========================
+def require_login_block() -> None:
+    st.subheader("Sign in to play with someone")
+    st.caption("Solo mode needs no login. Party mode requires login (email code).")
+
+    if not supabase_available():
+        st.error("Missing dependency: add `supabase>=2.0.0` to requirements.txt and redeploy.")
+        st.stop()
+
+    sb = create_sb_client(None)
+
+    email = st.text_input("Email", key="otp_email", placeholder="you@example.com")
+    c1, c2 = st.columns([1, 1])
+
+    with c1:
+        if st.button("Send code", width="stretch"):
+            if not email.strip():
+                st.error("Enter an email.")
+            else:
+                try:
+                    sb.auth.sign_in_with_otp({"email": email.strip()})
+                    st.session_state["otp_email_sent"] = email.strip()
+                    st.success("Email sent. Copy the code from the email and paste it below.")
+                except Exception as e:
+                    st.error(f"Could not send OTP: {e}")
+
+    with c2:
+        if st.button("Use solo mode instead", width="stretch"):
+            st.session_state["wants_party_mode"] = False
+            st.session_state["active_session_id"] = None
+            clear_session_param()
+            st.rerun()
+
+    sent_email = st.session_state.get("otp_email_sent")
+    if sent_email:
+        code = st.text_input("Code", key="otp_code", placeholder="123456")
+        if st.button("Verify code", width="stretch"):
+            if not code.strip():
+                st.error("Enter the code.")
+            else:
+                try:
+                    resp = sb.auth.verify_otp(
+                        {"email": sent_email, "token": code.strip(), "type": "email"}
+                    )
+
+                    session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
+                    user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
+
+                    access_token = None
+                    refresh_token = None
+                    user_id = None
+
+                    if session is not None:
+                        access_token = getattr(session, "access_token", None)
+                        refresh_token = getattr(session, "refresh_token", None)
+                        if isinstance(session, dict):
+                            access_token = access_token or session.get("access_token")
+                            refresh_token = refresh_token or session.get("refresh_token")
+
+                    if user is not None:
+                        user_id = getattr(user, "id", None)
+                        if isinstance(user, dict):
+                            user_id = user_id or user.get("id")
+
+                    if not access_token or not user_id:
+                        st.error("Login succeeded but access token/user_id missing. Check Supabase response.")
+                        st.stop()
+
+                    st.session_state["sb_auth"] = {
+                        "user_id": user_id,
+                        "email": sent_email,
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                    }
+                    st.success("Logged in.")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"Verification failed: {e}")
+
+
+# =========================
+# State init
 # =========================
 if "now_playing" not in st.session_state:
     st.session_state.now_playing = None
@@ -389,6 +436,10 @@ if "notes" not in st.session_state:
 if "wants_party_mode" not in st.session_state:
     st.session_state.wants_party_mode = False
 
+# Sticky party session id (fixes “goes back to main page”)
+if "active_session_id" not in st.session_state:
+    st.session_state.active_session_id = None
+
 
 # =========================
 # UI Header
@@ -402,57 +453,69 @@ if not eligible_works:
     st.error(f"No works have at least {MIN_VERSIONS_REQUIRED} versions.")
     st.stop()
 
-session_param = st.query_params.get("session")
-party_mode = bool(session_param) or bool(st.session_state.wants_party_mode)
+session_param = get_session_param()
+party_session_id = session_param or st.session_state.active_session_id
+party_mode = bool(party_session_id) or bool(st.session_state.wants_party_mode)
 
 b1, b2, b3 = st.columns([1, 1, 1])
 with b1:
     if st.button("🎧 Solo (no login)", width="stretch"):
         st.session_state.wants_party_mode = False
-        if "session" in st.query_params:
-            st.query_params.pop("session")
+        st.session_state.active_session_id = None
+        clear_session_param()
         st.rerun()
+
 with b2:
     if st.button("👥 Play with someone", width="stretch"):
         st.session_state.wants_party_mode = True
         st.rerun()
+
 with b3:
     if party_mode and is_logged_in():
         if st.button("🚪 Log out", width="stretch"):
             st.session_state.pop("sb_auth", None)
             st.session_state.pop("otp_email_sent", None)
+            st.session_state.active_session_id = None
+            clear_session_param()
             st.rerun()
 
 st.divider()
 
+# If party mode wanted but not logged in, show login block.
 if party_mode and not is_logged_in():
     require_login_block()
     st.stop()
+
 
 # =========================
 # Party session handling
 # =========================
 party_session = None
-party_session_id = None
 party_user_id = None
 sb = None
 
 if party_mode:
-    sb = sb_authed_client()  # <- AUTH HEADER CLIENT
+    sb = sb_authed_client()
     party_user_id = sb_user_id()
     if not party_user_id:
         st.error("Logged in but user id missing.")
         st.stop()
 
-    if session_param:
-        party_session_id = session_param
+    # If we have a session id, join/load it
+    if party_session_id:
         try:
             ensure_member(sb, party_session_id, party_user_id)
             party_session = load_party_session(sb, party_session_id)
+
+            # keep it sticky
+            st.session_state.active_session_id = party_session_id
+            set_session_param(party_session_id)
+
         except Exception as e:
             st.error(f"Could not join/load session: {e}")
             st.stop()
 
+    # If no session loaded yet, show create screen
     if not party_session:
         st.subheader("Party mode")
         st.write("Create a shared listening session and send the link to a friend.")
@@ -486,18 +549,23 @@ if party_mode:
             try:
                 new_id = create_party_session(
                     sb=sb,
-                    owner_id=party_user_id,
                     title=title.strip() or "Blind listening session",
                     work_id=chosen_work["id"],
                     video_ids=vids,
                 )
-                st.query_params["session"] = new_id
+
+                # sticky mode + URL param
+                st.session_state.active_session_id = new_id
+                set_session_param(new_id)
+
                 st.success("Session created. Share the URL in your browser (it includes ?session=...).")
                 st.rerun()
+
             except Exception as e:
                 st.error(f"Could not create session: {e}")
 
         st.stop()
+
 
 # =========================
 # Determine work + takes list
@@ -566,6 +634,7 @@ else:
 if len(versions) < MIN_VERSIONS_REQUIRED:
     st.error("This selection has fewer than 3 takes. Add more video IDs in works.json.")
     st.stop()
+
 
 # =========================
 # Main UI
