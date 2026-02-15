@@ -1,14 +1,11 @@
 import json
 import random
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Dict, Any, List
 
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
-
-# Supabase
-from supabase import create_client, Client
 
 # =========================
 # Configuration
@@ -81,10 +78,10 @@ IMPRESSION_OPTIONS = ["Loved it", "Convincing", "Neutral", "Distracting", "Not f
 
 
 # =========================
-# Helpers
+# Helpers (catalog + YouTube)
 # =========================
 @st.cache_data
-def load_catalog():
+def load_catalog() -> List[dict]:
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     works = data.get("works", [])
     for w in works:
@@ -164,116 +161,164 @@ def checkbox_group(title: str, options: list[str], selected: list[str], key_pref
     return out
 
 
-def get_supabase() -> Client:
+# =========================
+# Supabase (lazy) helpers
+# =========================
+def supabase_available() -> bool:
+    try:
+        import supabase  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+def get_supabase_client():
+    """
+    Creates a Supabase client using publishable key (anon key).
+    Lazy import so Solo mode doesn’t crash if supabase isn’t installed.
+    """
+    try:
+        from supabase import create_client  # type: ignore
+    except Exception:
+        st.error("Supabase package not installed. Add `supabase>=2.0.0` to requirements.txt.")
+        st.stop()
+
     url = st.secrets.get("SUPABASE_URL")
     key = st.secrets.get("SUPABASE_ANON_KEY")
     if not url or not key:
         st.error("Missing SUPABASE_URL / SUPABASE_ANON_KEY in Streamlit secrets.")
         st.stop()
+
     return create_client(url, key)
 
 
 def is_logged_in() -> bool:
-    return bool(st.session_state.get("sb_session"))
+    return bool(st.session_state.get("sb_auth"))
 
 
 def sb_user_id() -> Optional[str]:
-    s = st.session_state.get("sb_session")
-    if not s:
-        return None
-    # supabase-py session dict shape can vary; this is the common form:
-    user = s.get("user") or {}
-    return user.get("id")
+    auth = st.session_state.get("sb_auth") or {}
+    return auth.get("user_id")
 
 
-def require_login_block():
+def sb_set_session_tokens(sb, access_token: str, refresh_token: str):
     """
-    Email OTP login (no redirect). Flow:
-      1) enter email -> send code
-      2) enter code -> verify
+    Ensures subsequent DB requests use the logged-in JWT (so RLS works).
+    """
+    try:
+        sb.auth.set_session(access_token, refresh_token)
+    except Exception:
+        # If set_session signature differs in a future client, you’ll see it immediately.
+        # In practice, supabase-py supports it.
+        pass
+
+
+def require_login_block() -> None:
+    """
+    OTP CODE flow:
+      1) enter email -> send OTP email
+      2) enter code -> verify OTP -> store session tokens in st.session_state
+    No redirect URLs involved.
     """
     st.subheader("Sign in to play with someone")
     st.caption("Solo mode needs no login. Party mode requires login (email code).")
 
-    sb = get_supabase()
+    if not supabase_available():
+        st.error("Missing dependency: add `supabase>=2.0.0` to requirements.txt and redeploy.")
+        st.stop()
 
-    email = st.text_input("Email", key="login_email", placeholder="you@example.com")
+    sb = get_supabase_client()
+
+    email = st.text_input("Email", key="otp_email", placeholder="you@example.com")
     c1, c2 = st.columns([1, 1])
 
     with c1:
-        if st.button("Send login code", width="stretch"):
+        if st.button("Send code", width="stretch"):
             if not email.strip():
-                st.error("Enter an email first.")
+                st.error("Enter an email.")
             else:
-                # Supabase: sign_in_with_otp sends magic-link/OTP via email
-                # (We use OTP verification below.) :contentReference[oaicite:3]{index=3}
                 try:
+                    # This triggers the email. If “Confirm email” is enabled,
+                    # brand-new users might get a signup confirmation instead.
                     sb.auth.sign_in_with_otp({"email": email.strip()})
-                    st.success("Code sent. Check your email.")
-                    st.session_state["otp_email_sent"] = True
+                    st.session_state["otp_email_sent"] = email.strip()
+                    st.success("Email sent. Copy the code from the email and paste it below.")
                 except Exception as e:
-                    st.error(f"Could not send code: {e}")
+                    st.error(f"Could not send OTP: {e}")
 
     with c2:
         if st.button("Use solo mode instead", width="stretch"):
             st.session_state["wants_party_mode"] = False
-            # remove session query param if present
             if "session" in st.query_params:
                 st.query_params.pop("session")
             st.rerun()
 
-    if st.session_state.get("otp_email_sent"):
-        code = st.text_input("Enter the code from the email", key="login_code")
+    sent_email = st.session_state.get("otp_email_sent")
+    if sent_email:
+        code = st.text_input("Code", key="otp_code", placeholder="123456")
         if st.button("Verify code", width="stretch"):
-            try:
-                # verify_otp for email OTP :contentReference[oaicite:4]{index=4}
-                resp = sb.auth.verify_otp(
-                    {"email": email.strip(), "token": code.strip(), "type": "email"}
-                )
-                # Store session in Streamlit session_state
-                # resp.session may be object/dict; keep as dict-ish
-                sess = getattr(resp, "session", None) or resp.get("session")
-                user = getattr(resp, "user", None) or resp.get("user")
-                st.session_state["sb_session"] = {
-                    "session": sess,
-                    "user": {"id": getattr(user, "id", None) or (user or {}).get("id")},
-                    "email": email.strip(),
-                }
-                st.success("Logged in.")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Verification failed: {e}")
+            if not code.strip():
+                st.error("Enter the code.")
+            else:
+                try:
+                    # verify_otp type for email OTP is "email"
+                    resp = sb.auth.verify_otp(
+                        {"email": sent_email, "token": code.strip(), "type": "email"}
+                    )
+
+                    # Extract tokens + user id from resp (object/dict tolerant)
+                    session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
+                    user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
+
+                    access_token = getattr(session, "access_token", None) if session else None
+                    refresh_token = getattr(session, "refresh_token", None) if session else None
+                    user_id = getattr(user, "id", None) if user else None
+
+                    # Some client versions return dict-like
+                    if isinstance(session, dict):
+                        access_token = access_token or session.get("access_token")
+                        refresh_token = refresh_token or session.get("refresh_token")
+                    if isinstance(user, dict):
+                        user_id = user_id or user.get("id")
+
+                    if not access_token or not refresh_token or not user_id:
+                        st.error("Login succeeded but tokens/user_id were missing. Check Supabase client response.")
+                        st.stop()
+
+                    st.session_state["sb_auth"] = {
+                        "user_id": user_id,
+                        "email": sent_email,
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                    }
+                    st.success("Logged in.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Verification failed: {e}")
 
 
-def sb_authed_client() -> Client:
+def sb_authed_client():
     """
-    Returns a Supabase client with the user's access token set (so RLS works).
+    Supabase client with JWT session set.
     """
-    sb = get_supabase()
-    s = st.session_state.get("sb_session", {})
-    sess = s.get("session") or {}
-    access_token = getattr(sess, "access_token", None) or sess.get("access_token")
-    refresh_token = getattr(sess, "refresh_token", None) or sess.get("refresh_token")
-
-    # If we have tokens, set them on the client
+    sb = get_supabase_client()
+    auth = st.session_state.get("sb_auth") or {}
+    access_token = auth.get("access_token")
+    refresh_token = auth.get("refresh_token")
     if access_token and refresh_token:
-        try:
-            sb.auth.set_session(access_token, refresh_token)
-        except Exception:
-            # if set_session signature differs, fallback to "sign in" with token isn't available;
-            # but most setups support set_session.
-            pass
+        sb_set_session_tokens(sb, access_token, refresh_token)
     return sb
 
 
-def create_party_session(sb: Client, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
-    # Insert session row
+# =========================
+# Supabase DB operations
+# =========================
+def create_party_session(sb, owner_id: str, title: str, work_id: str, video_ids: list[str]) -> str:
     res = sb.table("game_sessions").insert(
         {"owner_id": owner_id, "title": title, "work_id": work_id, "video_ids": video_ids}
     ).execute()
     session_id = res.data[0]["id"]
 
-    # Add owner membership
     sb.table("session_members").insert(
         {"session_id": session_id, "user_id": owner_id, "role": "owner"}
     ).execute()
@@ -281,19 +326,26 @@ def create_party_session(sb: Client, owner_id: str, title: str, work_id: str, vi
     return session_id
 
 
-def ensure_member(sb: Client, session_id: str, user_id: str):
-    # Try read membership; if none, insert
-    mem = sb.table("session_members").select("*").eq("session_id", session_id).eq("user_id", user_id).execute()
+def ensure_member(sb, session_id: str, user_id: str):
+    mem = (
+        sb.table("session_members")
+        .select("*")
+        .eq("session_id", session_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
     if not mem.data:
-        sb.table("session_members").insert({"session_id": session_id, "user_id": user_id, "role": "member"}).execute()
+        sb.table("session_members").insert(
+            {"session_id": session_id, "user_id": user_id, "role": "member"}
+        ).execute()
 
 
-def load_party_session(sb: Client, session_id: str) -> dict:
+def load_party_session(sb, session_id: str) -> dict:
     res = sb.table("game_sessions").select("*").eq("id", session_id).single().execute()
     return res.data
 
 
-def upsert_note(sb: Client, session_id: str, user_id: str, work_id: str, video_id: str, payload: dict):
+def upsert_note(sb, session_id: str, user_id: str, work_id: str, video_id: str, payload: dict):
     sb.table("session_notes").upsert(
         {
             "session_id": session_id,
@@ -306,7 +358,7 @@ def upsert_note(sb: Client, session_id: str, user_id: str, work_id: str, video_i
     ).execute()
 
 
-def load_note(sb: Client, session_id: str, user_id: str, work_id: str, video_id: str) -> Optional[dict]:
+def load_note(sb, session_id: str, user_id: str, work_id: str, video_id: str) -> Optional[dict]:
     res = (
         sb.table("session_notes")
         .select("payload")
@@ -322,7 +374,7 @@ def load_note(sb: Client, session_id: str, user_id: str, work_id: str, video_id:
 
 
 # =========================
-# App State
+# Streamlit State
 # =========================
 if "now_playing" not in st.session_state:
     st.session_state.now_playing = None
@@ -334,18 +386,17 @@ if "played_by_work" not in st.session_state:
     st.session_state.played_by_work = {}
 
 if "notes" not in st.session_state:
-    # solo-mode notes live here
-    st.session_state.notes = {}
+    st.session_state.notes = {}  # solo-mode notes only
 
 if "wants_party_mode" not in st.session_state:
     st.session_state.wants_party_mode = False
 
 
 # =========================
-# Header
+# UI Header
 # =========================
 st.title("Blind Aria Trainer")
-st.caption("Listen first. Reveal later. Solo mode is anonymous. Party mode uses login + shared session link.")
+st.caption("Solo: no login. Party: login + shareable session link.")
 
 works = load_catalog()
 eligible_works = [w for w in works if has_min_versions(w, MIN_VERSIONS_REQUIRED)]
@@ -353,44 +404,38 @@ if not eligible_works:
     st.error(f"No works have at least {MIN_VERSIONS_REQUIRED} versions.")
     st.stop()
 
-# If URL contains ?session=..., party mode is implied
+# Party mode if: user clicked it OR URL contains ?session=...
 session_param = st.query_params.get("session")
 party_mode = bool(session_param) or bool(st.session_state.wants_party_mode)
 
-# =========================
-# Mode chooser (top)
-# =========================
-top1, top2, top3 = st.columns([1, 1, 1])
-with top1:
+# Top buttons
+b1, b2, b3 = st.columns([1, 1, 1])
+with b1:
     if st.button("🎧 Solo (no login)", width="stretch"):
         st.session_state.wants_party_mode = False
         if "session" in st.query_params:
             st.query_params.pop("session")
         st.rerun()
-
-with top2:
+with b2:
     if st.button("👥 Play with someone", width="stretch"):
         st.session_state.wants_party_mode = True
         st.rerun()
-
-with top3:
+with b3:
     if party_mode and is_logged_in():
         if st.button("🚪 Log out", width="stretch"):
-            st.session_state.pop("sb_session", None)
+            st.session_state.pop("sb_auth", None)
             st.session_state.pop("otp_email_sent", None)
             st.rerun()
 
 st.divider()
 
-# =========================
-# Party mode auth gate
-# =========================
+# Auth gate
 if party_mode and not is_logged_in():
     require_login_block()
     st.stop()
 
 # =========================
-# Party mode session handling
+# Party session handling
 # =========================
 party_session = None
 party_session_id = None
@@ -401,10 +446,9 @@ if party_mode:
     sb = sb_authed_client()
     party_user_id = sb_user_id()
     if not party_user_id:
-        st.error("Logged-in session missing user id.")
+        st.error("Logged in but user id missing.")
         st.stop()
 
-    # If arriving via shared link: join session
     if session_param:
         party_session_id = session_param
         try:
@@ -414,15 +458,12 @@ if party_mode:
             st.error(f"Could not join/load session: {e}")
             st.stop()
 
-    # Otherwise: allow creating a session
     if not party_session:
         st.subheader("Party mode")
         st.write("Create a shared listening session and send the link to a friend.")
-
         title = st.text_input("Session title", value="Blind listening session")
         versions_count = st.number_input("Number of takes", min_value=3, max_value=10, value=5, step=1)
 
-        # Choose aria
         choice_mode = st.radio("Choose aria", ["Random", "Search"], horizontal=True)
         chosen_work = None
 
@@ -443,12 +484,10 @@ if party_mode:
                 st.warning(f"No eligible matches (need ≥ {MIN_VERSIONS_REQUIRED} versions).")
 
         if chosen_work and st.button("Create shared session", width="stretch"):
-            # choose fixed take list now (shared)
             vids = pick_versions(chosen_work, int(versions_count))
             if len(vids) < MIN_VERSIONS_REQUIRED:
                 st.error("Not enough versions in this work.")
                 st.stop()
-
             try:
                 new_id = create_party_session(
                     sb=sb,
@@ -457,10 +496,8 @@ if party_mode:
                     work_id=chosen_work["id"],
                     video_ids=vids,
                 )
-                # Put into URL so it’s shareable
                 st.query_params["session"] = new_id
-                st.success("Session created. Share this link:")
-                st.code(st.get_url() if hasattr(st, "get_url") else "Copy the URL from your browser address bar.")
+                st.success("Session created. Share the URL in your browser (it includes ?session=...).")
                 st.rerun()
             except Exception as e:
                 st.error(f"Could not create session: {e}")
@@ -468,23 +505,18 @@ if party_mode:
         st.stop()
 
 # =========================
-# From here: we are either in SOLO mode,
-# or in PARTY mode with a loaded session.
+# Determine work + takes list
 # =========================
-
-# --- Determine the work + take list depending on mode ---
 if party_mode:
-    # session defines work + take list
     work_id = party_session["work_id"]
-    shared_video_ids = party_session["video_ids"]
+    shared_video_ids = party_session["video_ids"] or []
     current_work = next((w for w in works if w["id"] == work_id), None)
     if not current_work:
-        st.error("This session references a work_id not found in your local works.json.")
+        st.error("Session references a work_id not found in your local works.json.")
         st.stop()
     versions = [vid for vid in shared_video_ids if vid]
-    mode_label = f"Party session: {party_session.get('title','Blind session')}"
+    mode_label = f"Party: {party_session.get('title', 'Blind session')}"
 else:
-    # solo chooses work each time
     st.subheader("Solo mode")
     c1, c2 = st.columns([1, 1])
     with c1:
@@ -503,11 +535,11 @@ else:
         set_random_work_id()
 
     if solo_mode == "Random aria":
-        b1, b2 = st.columns([1, 1])
-        with b1:
+        x1, x2 = st.columns([1, 1])
+        with x1:
             if st.button("🎲 New random aria", width="stretch"):
                 set_random_work_id()
-        with b2:
+        with x2:
             if st.button("🔀 Reshuffle takes", width="stretch"):
                 st.session_state.shuffle_seed += 1
                 st.session_state.now_playing = None
@@ -536,28 +568,29 @@ else:
     random.shuffle(versions)
     mode_label = "Solo"
 
+# Sanity: ensure at least 3 takes
+if len(versions) < MIN_VERSIONS_REQUIRED:
+    st.error("This selection has fewer than 3 takes. Add more video IDs in works.json.")
+    st.stop()
+
+# =========================
+# Main UI
+# =========================
 st.subheader(mode_label)
 st.write(f"**{current_work['title']}** — {current_work.get('composer','')}")
-st.caption(f"Takes: {len(versions)} (rule: offered arias must have ≥ {MIN_VERSIONS_REQUIRED} versions)")
+st.caption(f"Takes: {len(versions)} (aria eligibility rule: ≥ {MIN_VERSIONS_REQUIRED} versions in catalog)")
 
 if st.button("⏹ Stop playback", width="stretch"):
     st.session_state.now_playing = None
 
 st.divider()
 
-# Played tracking is per work (solo) or per work within this browser session (party)
 played_set = st.session_state.played_by_work.setdefault(current_work["id"], set())
 
-# =========================
-# Takes loop
-# =========================
 for idx, vid in enumerate(versions, start=1):
-    is_played = vid in played_set
     nk = note_key_for(current_work["id"], vid)
+    is_played = vid in played_set
 
-    # Load saved payload:
-    # - Solo: from session_state
-    # - Party: from DB (per user)
     if party_mode:
         saved = load_note(sb, party_session_id, party_user_id, current_work["id"], vid) or {}
     else:
@@ -588,28 +621,24 @@ for idx, vid in enumerate(versions, start=1):
             saved.get("voice_production", []),
             key_prefix=f"vp_{nk}",
         )
-
         language = checkbox_group(
             "2) Language & articulation",
             LANGUAGE_OPTIONS,
             saved.get("language", []),
             key_prefix=f"lang_{nk}",
         )
-
         style = checkbox_group(
             "3) Style & aesthetic",
             STYLE_OPTIONS,
             saved.get("style", []),
             key_prefix=f"style_{nk}",
         )
-
         meaning_intent = checkbox_group(
             "4A) Meaning, intent & connection — intentional shaping",
             MEANING_INTENT_OPTIONS,
             saved.get("meaning_intent", []),
             key_prefix=f"mi_{nk}",
         )
-
         sense_making = checkbox_group(
             "4B) Meaning, intent & connection — sense-making",
             SENSE_MAKING_OPTIONS,
@@ -650,11 +679,10 @@ for idx, vid in enumerate(versions, start=1):
     comment = st.text_area(
         "What caught your ear?",
         value=saved.get("comment", ""),
-        placeholder="e.g. 'Purposeful phrasing, but emotionally distant…'",
+        placeholder="e.g. 'Great legato, but vowels blur in high notes…'",
         key=f"comment_{nk}",
     )
 
-    # Save button (solo -> session_state, party -> DB upsert)
     if st.button("💾 Save notes", key=f"save_{nk}", width="stretch"):
         payload = {
             "voice_production": voice_prod,
@@ -667,7 +695,6 @@ for idx, vid in enumerate(versions, start=1):
             "impression": impression,
             "comment": comment.strip(),
         }
-
         if party_mode:
             try:
                 upsert_note(sb, party_session_id, party_user_id, current_work["id"], vid, payload)
@@ -687,10 +714,6 @@ for idx, vid in enumerate(versions, start=1):
 
     st.divider()
 
-# Party: show share link
 if party_mode:
     st.subheader("Share this session")
-    st.caption("Send this link to another user. They’ll be asked to log in, then they can join.")
-    # Streamlit doesn’t always have a stable get_url() in older versions,
-    # so easiest is “copy the browser URL”
-    st.info("Copy the URL from your browser address bar (it contains ?session=...).")
+    st.caption("Send the URL in your browser (it contains ?session=...). Your friend will log in with a code and join.")
