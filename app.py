@@ -1,7 +1,7 @@
 import json
 import random
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional
 
 import requests
 import streamlit as st
@@ -83,7 +83,7 @@ IMPRESSION_OPTIONS = ["Loved it", "Convincing", "Neutral", "Distracting", "Not f
 # Helpers (catalog + YouTube)
 # =========================
 @st.cache_data
-def load_catalog() -> List[dict]:
+def load_catalog():
     if not DATA_PATH.exists():
         st.error(f"Missing catalog file at: {DATA_PATH}")
         st.stop()
@@ -91,9 +91,7 @@ def load_catalog() -> List[dict]:
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     works = data.get("works", [])
     for w in works:
-        w["_search"] = " ".join(
-            [w.get("title", ""), w.get("composer", ""), *w.get("aliases", [])]
-        ).lower()
+        w["_search"] = " ".join([w.get("title", ""), w.get("composer", ""), *w.get("aliases", [])]).lower()
     return works
 
 
@@ -102,10 +100,6 @@ def yt_url(video_id: str) -> str:
 
 
 def yt_audio_only(video_id: str, autoplay: bool = True):
-    """
-    "Level 2" hiding: tiny invisible embed with autoplay.
-    Not true DRM, but avoids showing the actual YouTube player UI.
-    """
     auto = "1" if autoplay else "0"
     html = f"""
     <div style="height:0; overflow:hidden;">
@@ -175,14 +169,12 @@ def checkbox_group(title: str, options: list[str], selected: list[str], key_pref
 # Streamlit query params (robust across versions)
 # =========================
 def get_session_param() -> Optional[str]:
-    # New API
     try:
         val = st.query_params.get("session")
         if isinstance(val, list):
             return val[0] if val else None
         return val
     except Exception:
-        # Old API
         qp = st.experimental_get_query_params()
         vals = qp.get("session")
         return vals[0] if vals else None
@@ -224,11 +216,6 @@ def get_supabase_url_key():
 
 
 def create_sb_client(access_token: Optional[str] = None):
-    """
-    Create a Supabase client.
-    If access_token is provided, authenticate PostgREST requests with it (RLS-safe),
-    without ClientOptions (avoids version incompatibilities).
-    """
     try:
         from supabase import create_client  # type: ignore
     except Exception:
@@ -239,10 +226,7 @@ def create_sb_client(access_token: Optional[str] = None):
     sb = create_client(url, anon_key)
 
     if access_token:
-        # DB calls go through PostgREST (this is what makes RLS auth.uid() work)
         sb.postgrest.auth(access_token)
-
-        # Optional for future use (Storage etc.)
         try:
             sb.storage.auth(access_token)
         except Exception:
@@ -272,13 +256,11 @@ def sb_authed_client():
 # Supabase DB operations
 # =========================
 def create_party_session(sb, title: str, work_id: str, video_ids: list[str]) -> str:
-    # IMPORTANT: do NOT send owner_id; DB default should set owner_id = auth.uid()
     res = sb.table("game_sessions").insert(
         {"title": title, "work_id": work_id, "video_ids": video_ids}
     ).execute()
     session_id = res.data[0]["id"]
 
-    # insert membership row
     owner_id = sb_user_id()
     if owner_id:
         sb.table("session_members").insert(
@@ -302,9 +284,34 @@ def ensure_member(sb, session_id: str, user_id: str):
         ).execute()
 
 
+def get_member_role(sb, session_id: str, user_id: str) -> Optional[str]:
+    mem = (
+        sb.table("session_members")
+        .select("role")
+        .eq("session_id", session_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    if mem.data:
+        return mem.data[0].get("role")
+    return None
+
+
 def load_party_session(sb, session_id: str) -> dict:
     res = sb.table("game_sessions").select("*").eq("id", session_id).single().execute()
     return res.data
+
+
+def update_party_session_work(sb, session_id: str, work_id: str, video_ids: list[str]):
+    sb.table("game_sessions").update(
+        {"work_id": work_id, "video_ids": video_ids}
+    ).eq("id", session_id).execute()
+
+
+def update_party_session_takes(sb, session_id: str, video_ids: list[str]):
+    sb.table("game_sessions").update(
+        {"video_ids": video_ids}
+    ).eq("id", session_id).execute()
 
 
 def upsert_note(sb, session_id: str, user_id: str, work_id: str, video_id: str, payload: dict):
@@ -378,9 +385,7 @@ def require_login_block() -> None:
                 st.error("Enter the code.")
             else:
                 try:
-                    resp = sb.auth.verify_otp(
-                        {"email": sent_email, "token": code.strip(), "type": "email"}
-                    )
+                    resp = sb.auth.verify_otp({"email": sent_email, "token": code.strip(), "type": "email"})
 
                     session = getattr(resp, "session", None) or (resp.get("session") if isinstance(resp, dict) else None)
                     user = getattr(resp, "user", None) or (resp.get("user") if isinstance(resp, dict) else None)
@@ -436,7 +441,6 @@ if "notes" not in st.session_state:
 if "wants_party_mode" not in st.session_state:
     st.session_state.wants_party_mode = False
 
-# Sticky party session id (fixes “goes back to main page”)
 if "active_session_id" not in st.session_state:
     st.session_state.active_session_id = None
 
@@ -481,7 +485,6 @@ with b3:
 
 st.divider()
 
-# If party mode wanted but not logged in, show login block.
 if party_mode and not is_logged_in():
     require_login_block()
     st.stop()
@@ -493,6 +496,7 @@ if party_mode and not is_logged_in():
 party_session = None
 party_user_id = None
 sb = None
+party_role = None
 
 if party_mode:
     sb = sb_authed_client()
@@ -501,13 +505,12 @@ if party_mode:
         st.error("Logged in but user id missing.")
         st.stop()
 
-    # If we have a session id, join/load it
     if party_session_id:
         try:
             ensure_member(sb, party_session_id, party_user_id)
+            party_role = get_member_role(sb, party_session_id, party_user_id)
             party_session = load_party_session(sb, party_session_id)
 
-            # keep it sticky
             st.session_state.active_session_id = party_session_id
             set_session_param(party_session_id)
 
@@ -515,7 +518,6 @@ if party_mode:
             st.error(f"Could not join/load session: {e}")
             st.stop()
 
-    # If no session loaded yet, show create screen
     if not party_session:
         st.subheader("Party mode")
         st.write("Create a shared listening session and send the link to a friend.")
@@ -553,14 +555,10 @@ if party_mode:
                     work_id=chosen_work["id"],
                     video_ids=vids,
                 )
-
-                # sticky mode + URL param
                 st.session_state.active_session_id = new_id
                 set_session_param(new_id)
-
                 st.success("Session created. Share the URL in your browser (it includes ?session=...).")
                 st.rerun()
-
             except Exception as e:
                 st.error(f"Could not create session: {e}")
 
@@ -637,6 +635,75 @@ if len(versions) < MIN_VERSIONS_REQUIRED:
 
 
 # =========================
+# Party session controls (NEW)
+# =========================
+if party_mode:
+    is_owner = (party_role == "owner") or (party_session.get("owner_id") == party_user_id)
+
+    with st.expander("Session controls", expanded=False):
+        cA, cB = st.columns([1, 1])
+        with cA:
+            if st.button("🔄 Refresh session", width="stretch"):
+                st.rerun()
+        with cB:
+            st.caption("Only the owner can change aria / takes.")
+
+        if not is_owner:
+            st.info("You are a session member. Ask the owner to change the aria if needed.")
+        else:
+            st.markdown("**Owner controls**")
+            new_count = st.number_input("Number of takes", min_value=3, max_value=10, value=max(3, len(versions)), step=1)
+
+            pick_mode = st.radio("Pick new aria", ["Random", "Search"], horizontal=True, key="owner_pick_mode")
+            selected_work = None
+
+            if pick_mode == "Random":
+                selected_work = random.choice(eligible_works)
+                st.write(f"Next: **{selected_work['title']} — {selected_work.get('composer','')}**")
+            else:
+                qq = st.text_input("Search catalogue", key="owner_search", placeholder="Type aria/opera/composer…")
+                candidates = []
+                if qq.strip():
+                    ql = qq.lower().strip()
+                    candidates = [w for w in eligible_works if ql in w["_search"]]
+                if candidates:
+                    labels = {f'{w["title"]} — {w.get("composer","")}': w for w in candidates}
+                    sel = st.selectbox("Select aria", list(labels.keys()), key="owner_select_work")
+                    selected_work = labels[sel]
+                elif qq.strip():
+                    st.warning("No eligible match (needs ≥ 3 takes).")
+
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if selected_work and st.button("✅ Change aria now", width="stretch"):
+                    new_vids = pick_versions(selected_work, int(new_count))
+                    if len(new_vids) < MIN_VERSIONS_REQUIRED:
+                        st.error("Selected aria has too few takes.")
+                    else:
+                        try:
+                            update_party_session_work(sb, party_session_id, selected_work["id"], new_vids)
+                            st.session_state.now_playing = None
+                            st.success("Aria changed.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Could not update session: {e}")
+
+            with col2:
+                if st.button("🔀 Reshuffle takes (same aria)", width="stretch"):
+                    new_vids = pick_versions(current_work, int(new_count))
+                    if len(new_vids) < MIN_VERSIONS_REQUIRED:
+                        st.error("Not enough takes for reshuffle.")
+                    else:
+                        try:
+                            update_party_session_takes(sb, party_session_id, new_vids)
+                            st.session_state.now_playing = None
+                            st.success("Takes reshuffled.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Could not reshuffle takes: {e}")
+
+
+# =========================
 # Main UI
 # =========================
 st.subheader(mode_label)
@@ -678,65 +745,23 @@ for idx, vid in enumerate(versions, start=1):
         yt_audio_only(vid, autoplay=True)
 
     with st.expander("Notepad (blind questionnaire)", expanded=False):
-        voice_prod = checkbox_group(
-            "1) Voice production & timbre",
-            VOICE_PRODUCTION_OPTIONS,
-            saved.get("voice_production", []),
-            key_prefix=f"vp_{nk}",
-        )
-        language = checkbox_group(
-            "2) Language & articulation",
-            LANGUAGE_OPTIONS,
-            saved.get("language", []),
-            key_prefix=f"lang_{nk}",
-        )
-        style = checkbox_group(
-            "3) Style & aesthetic",
-            STYLE_OPTIONS,
-            saved.get("style", []),
-            key_prefix=f"style_{nk}",
-        )
-        meaning_intent = checkbox_group(
-            "4A) Meaning, intent & connection — intentional shaping",
-            MEANING_INTENT_OPTIONS,
-            saved.get("meaning_intent", []),
-            key_prefix=f"mi_{nk}",
-        )
-        sense_making = checkbox_group(
-            "4B) Meaning, intent & connection — sense-making",
-            SENSE_MAKING_OPTIONS,
-            saved.get("sense_making", []),
-            key_prefix=f"sm_{nk}",
-        )
+        voice_prod = checkbox_group("1) Voice production & timbre", VOICE_PRODUCTION_OPTIONS, saved.get("voice_production", []), key_prefix=f"vp_{nk}")
+        language = checkbox_group("2) Language & articulation", LANGUAGE_OPTIONS, saved.get("language", []), key_prefix=f"lang_{nk}")
+        style = checkbox_group("3) Style & aesthetic", STYLE_OPTIONS, saved.get("style", []), key_prefix=f"style_{nk}")
+        meaning_intent = checkbox_group("4A) Meaning, intent — intentional shaping", MEANING_INTENT_OPTIONS, saved.get("meaning_intent", []), key_prefix=f"mi_{nk}")
+        sense_making = checkbox_group("4B) Meaning, intent — sense-making", SENSE_MAKING_OPTIONS, saved.get("sense_making", []), key_prefix=f"sm_{nk}")
 
         transmission_default = saved.get("transmission", "Neutral")
         transmission_idx = TRANSMISSION_OPTIONS.index(transmission_default) if transmission_default in TRANSMISSION_OPTIONS else 2
-        transmission = st.radio(
-            "4C) Transmission & connection (choose one)",
-            TRANSMISSION_OPTIONS,
-            index=transmission_idx,
-            key=f"trans_{nk}",
-        )
+        transmission = st.radio("4C) Transmission (choose one)", TRANSMISSION_OPTIONS, index=transmission_idx, key=f"trans_{nk}")
 
         anchor_default = saved.get("anchor", "Unsure")
         anchor_idx = ANCHOR_OPTIONS.index(anchor_default) if anchor_default in ANCHOR_OPTIONS else 1
-        anchor = st.radio(
-            "4D) Anchor reflection",
-            ANCHOR_OPTIONS,
-            index=anchor_idx,
-            horizontal=True,
-            key=f"anchor_{nk}",
-        )
+        anchor = st.radio("4D) Intentionality / empathy felt?", ANCHOR_OPTIONS, index=anchor_idx, horizontal=True, key=f"anchor_{nk}")
 
         impr_default = saved.get("impression", "Neutral")
         impr_idx = IMPRESSION_OPTIONS.index(impr_default) if impr_default in IMPRESSION_OPTIONS else 2
-        impression = st.radio(
-            "5) Overall impression",
-            IMPRESSION_OPTIONS,
-            index=impr_idx,
-            horizontal=True,
-            key=f"impr_{nk}",
-        )
+        impression = st.radio("5) Overall impression", IMPRESSION_OPTIONS, index=impr_idx, horizontal=True, key=f"impr_{nk}")
 
     st.markdown("**Free note (optional)**")
     comment = st.text_area(
@@ -779,4 +804,4 @@ for idx, vid in enumerate(versions, start=1):
 
 if party_mode:
     st.subheader("Share this session")
-    st.caption("Send the URL in your browser (it contains ?session=...). Your friend logs in with a code and joins.")
+    st.caption("Send the URL in your browser (it contains ?session=...).")
