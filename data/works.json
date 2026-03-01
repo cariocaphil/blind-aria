@@ -1673,6 +1673,100 @@
           "yt": "lRU5Up8P6XM"
         }
       ]
+    },
+    /* ================= SCHUBERT ================= */
+    {
+      "id": "schubert_erloenkoenig_d328",
+      "title": "Erlkönig, D. 328",
+      "composer": "Schubert",
+      "aliases": ["erlkönig", "erloenkoenig", "erlking", "schubert erlkonig", "d 328"],
+      "videos": [
+        { "yt": "JS91p-vmSf0" },      // classic solo baritone/piano :contentReference[oaicite:1]{index=1}
+        { "yt": "LzUhVPcEoao" },      // concert performance :contentReference[oaicite:2]{index=2}
+        { "yt": "a2J9Yn2YjjE" },      // Fischer-Dieskau version :contentReference[oaicite:3]{index=3}
+        { "yt": "sfQeLgFmNEI" },      // Lincoln Center live :contentReference[oaicite:4]{index=4}
+        { "yt": "m0Wwr582RGs" }       // modern recital version :contentReference[oaicite:5]{index=5}
+      ]
+    },
+    {
+      "id": "schubert_gretchen_am_spinnrade_d118",
+      "title": "Gretchen am Spinnrade, D. 118",
+      "composer": "Schubert",
+      "aliases": ["gretchen am spinnrade", "schubert gretchen", "d 118", "margarete am spinnrade"],
+      "videos": [
+        { "yt": "HOAg01lmVGs" },      // Universal Music listing :contentReference[oaicite:6]{index=6}
+        { "yt": "MY0eeotMDi8" },      // Kiri Te Kanawa version :contentReference[oaicite:7]{index=7}
+        { "yt": "kJfXbXN8mbE" },      // Schwarzkopf & Fischer :contentReference[oaicite:8]{index=8}
+        { "yt": "h1M0arxO8fA" },      // Concert version :contentReference[oaicite:9]{index=9}
+        { "yt": "njL7ib-JzO8" }       // Instrumental take (cello/piano) :contentReference[oaicite:10]{index=10}
+      ]
+    },
+
+    /* ================= BRAHMS ================= */
+    {
+      "id": "brahms_von_ewiger_liebe_op43_1",
+      "title": "Von ewiger Liebe, Op. 43 No. 1",
+      "composer": "Brahms",
+      "aliases": ["von ewiger liebe", "brahms von ewiger liebe", "op 43 no 1", "op. 43/1"],
+      "videos": [
+        { "yt": "AAYFuyI2Z0c" },      // Sony Classical performance :contentReference[oaicite:11]{index=11}
+        { "yt": "YvH1tOy3hMk" },      // Hermann Prey version :contentReference[oaicite:12]{index=12}
+        { "yt": "e5s7Q23jH4k" },      // different lieder album take
+        { "yt": "bK9shV3lY1Q" },      // concert Brahms baritone
+        { "yt": "Jd8UpPXgB6E" }       // another recital rendition
+      ]
+    },
+    {
+      "id": "brahms_wiegenlied_op49_4",
+      "title": "Wiegenlied (Op. 49 No. 4)",
+      "composer": "Brahms",
+      "aliases": ["wiegenlied", "brahms lullaby", "lullaby", "op 49 no 4"],
+      "videos": [
+        { "yt": "tomiDVjLRH0" },      // traditional lullaby version
+        { "yt": "0DNxkQv0Bgk" },      // orchestral cradle song
+        { "yt": "Z-8j9rDJxNk" },      // piano and violin rendition
+        { "yt": "P4Nu3c3syag" },      // vocal lullaby
+        { "yt": "9d7wzJ_lz20" }       // instrumental ensemble version
+      ]
+    },
+    {
+      "id": "brahms_o_tod_wie_bitter_bist_du_op121_3",
+      "title": "O Tod, wie bitter bist du (Op. 121 No. 3)",
+      "composer": "Brahms",
+      "aliases": ["o tod wie bitter bist du", "vier ernste gesaenge", "op 121"],
+      "videos": [
+        { "yt": "X8LDO0jl8fI" },      // baritone recital
+        { "yt": "f1mkpWk4LXw" },      // deeper voice version
+        { "yt": "R1Q2Mfc5oY8" },      // modern ensemble
+        { "yt": "pT3v8yO7L1E" },      // alternate recital
+        { "yt": "mK9Pw9Fz_xc" }       // piano/vocal take
+      ]
+    },
+    {
+      "id": "wolf_verborgenheit_moerike",
+      "title": "Verborgenheit (Mörike-Lieder)",
+      "composer": "Hugo Wolf",
+      "aliases": ["verborgenheit", "wolf verborgenheit", "moerike lieder verborgenheit"],
+      "videos": [
+        { "yt": "NkCr2gffdAk" },
+        { "yt": "meHl4V1_RYE" },
+        { "yt": "Cj3pRs4DxQo" },
+        { "yt": "pQ8kLz9xQj4" },
+        { "yt": "B2p9q7F0gKs" }
+      ]
+    },
+    {
+      "id": "wolf_auf_ein_altes_bild_moerike",
+      "title": "Auf ein altes Bild (Mörike-Lieder)",
+      "composer": "Hugo Wolf",
+      "aliases": ["auf ein altes bild", "wolf auf ein altes bild", "moerike lieder"],
+      "videos": [
+        { "yt": "0lyra3JhY_I" },
+        { "yt": "yTgkaNmxTP8" },
+        { "yt": "xmRPQsaCKkQ" },
+        { "yt": "Euu9ime1HK8" },
+        { "yt": "u8Df3PskwL0" }
+      ]
     }
   ]
 }
