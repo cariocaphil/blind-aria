@@ -688,7 +688,11 @@ for idx, vid in enumerate(versions, start=1):
     else:
         saved = st.session_state.notes.get(nk, {})
 
-    st.markdown(f"### Take {idx}")
+    # Apply background color based on whether the take has been played
+    if is_played:
+        st.markdown(f'<div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #28a745;"><h3 style="margin-top: 0;">Take {idx} ✅</h3></div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #0066cc;"><h3 style="margin-top: 0;">Take {idx}</h3></div>', unsafe_allow_html=True)
 
     c1, c2 = st.columns([1, 1])
     with c1:
@@ -697,6 +701,7 @@ for idx, vid in enumerate(versions, start=1):
         if st.button(listen_label, key=f"listen_{nk}", width="stretch", type=listen_type):
             st.session_state.now_playing = vid
             played_set.add(vid)
+            st.rerun()
 
     with c2:
         if st.button("⏹ Stop", key=f"stop_{nk}", width="stretch"):
