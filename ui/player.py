@@ -49,9 +49,14 @@ def show_player_ui(current_work: dict, versions: list[str], party_mode: bool = F
             listen_label = "✅ Played" if is_played else "🎧 Listen"
             listen_type = "secondary" if is_played else "primary"
             if st.button(listen_label, key=f"listen_{nk}", width="stretch", type=listen_type):
-                st.session_state.now_playing = vid
-                played_set.add(vid)
-                st.rerun()
+                # Validate video exists before playing
+                meta = yt_oembed(vid)
+                if not meta:
+                    st.error(f"❌ Take {idx}: Video link is broken or unavailable. Please try another take.")
+                else:
+                    st.session_state.now_playing = vid
+                    played_set.add(vid)
+                    st.rerun()
 
         with c2:
             if st.button("⏹ Stop", key=f"stop_{nk}", width="stretch"):
