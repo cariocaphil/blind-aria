@@ -35,25 +35,31 @@ def show_header() -> tuple[bool, bool, str]:
 
     # Top buttons (don't distract invite landing too much)
     if not is_invite_link:
-        b1, b2, b3 = st.columns([1, 1, 1])
-        with b1:
-            if st.button("🎧 Solo (no login)", width="stretch"):
-                st.session_state.wants_party_mode = False
-                st.session_state.active_session_id = None
-                clear_session_param()
-                st.rerun()
-        with b2:
-            if st.button("👥 Play with someone", width="stretch"):
-                st.session_state.wants_party_mode = True
-                st.rerun()
-        with b3:
-            if party_mode and is_logged_in():
-                if st.button("🚪 Log out", width="stretch"):
-                    st.session_state.pop("sb_auth", None)
-                    st.session_state.pop("otp_email_sent", None)
+        wants_party = st.session_state.get("wants_party_mode", False)
+        if wants_party and is_logged_in():
+            # User has chosen party mode and is logged in - don't show buttons, they'll see session creation UI
+            pass
+        else:
+            b1, b2, b3 = st.columns([1, 1, 1])
+            with b1:
+                if st.button("🎧 Solo (no login)", width="stretch"):
+                    st.session_state.wants_party_mode = False
                     st.session_state.active_session_id = None
                     clear_session_param()
                     st.rerun()
+            with b2:
+                if not wants_party:
+                    if st.button("👥 Play with someone", width="stretch"):
+                        st.session_state.wants_party_mode = True
+                        st.rerun()
+            with b3:
+                if party_mode and is_logged_in():
+                    if st.button("🚪 Log out", width="stretch"):
+                        st.session_state.pop("sb_auth", None)
+                        st.session_state.pop("otp_email_sent", None)
+                        st.session_state.active_session_id = None
+                        clear_session_param()
+                        st.rerun()
     else:
         # Invite landing: show a single "Solo" escape hatch and login prompt
         c1, c2 = st.columns([1, 2])

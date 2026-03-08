@@ -26,10 +26,18 @@ def load_catalog():
 
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     works = data.get("works", [])
+    
+    # Filter out any non-dict elements and ensure they have required fields
+    valid_works = []
     for w in works:
-        aliases = w.get("aliases") or []
-        w["_search"] = " ".join([w.get("title", ""), w.get("composer", ""), *aliases]).lower()
-    return works
+        if isinstance(w, dict) and "id" in w and "title" in w:
+            aliases = w.get("aliases") or []
+            w["_search"] = " ".join([w.get("title", ""), w.get("composer", ""), *aliases]).lower()
+            valid_works.append(w)
+        else:
+            print(f"Warning: Skipping invalid work entry: {type(w)} - {w}")
+    
+    return valid_works
 
 
 # =========================

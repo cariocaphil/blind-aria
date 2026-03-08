@@ -78,6 +78,12 @@ def get_member_role(sb, session_id: str, user_id: str) -> Optional[str]:
     return None
 
 
+def get_session_members(sb, session_id: str) -> list[dict]:
+    """Get all members of a session."""
+    mem = sb.table("session_members").select("*").eq("session_id", session_id).execute()
+    return mem.data or []
+
+
 def load_party_session(sb, session_id: str) -> dict:
     """Load session details from database."""
     return sb.table("game_sessions").select("*").eq("id", session_id).single().execute().data

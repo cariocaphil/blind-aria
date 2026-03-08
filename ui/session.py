@@ -14,6 +14,7 @@ from db import (
     load_party_session,
     update_party_session_work,
     update_party_session_takes,
+    get_session_members,
 )
 from utils import load_catalog, pick_versions, set_session_param
 
@@ -72,6 +73,15 @@ def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_sessi
     can_control = is_owner or is_invite_link
 
     with st.expander("Session controls", expanded=False):
+        # Show session members
+        members = get_session_members(sb, party_session_id)
+        if members:
+            st.subheader("Session Members")
+            for member in members:
+                role_icon = "👑" if member.get("role") == "owner" else "👤"
+                st.write(f"{role_icon} {member.get('user_id', 'Unknown')}")
+            st.divider()
+
         cA, cB = st.columns([1, 1])
         with cA:
             if st.button("🔄 Refresh session", width="stretch"):
