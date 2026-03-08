@@ -66,9 +66,10 @@ def create_session_ui(sb) -> str:
     st.stop()
 
 
-def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_session: dict, current_work: dict, versions: list[str]):
-    """Display session control options for owner."""
+def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_session: dict, current_work: dict, versions: list[str], is_invite_link: bool = False):
+    """Display session control options for owner or anyone who joined via invite link."""
     is_owner = party_session.get("owner_id") == party_user_id
+    can_control = is_owner or is_invite_link
 
     with st.expander("Session controls", expanded=False):
         cA, cB = st.columns([1, 1])
@@ -76,9 +77,12 @@ def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_sessi
             if st.button("🔄 Refresh session", width="stretch"):
                 st.rerun()
         with cB:
-            st.caption("Owner can change aria / reshuffle.")
+            if can_control:
+                st.caption("You can change aria / reshuffle.")
+            else:
+                st.caption("Owner can change aria / reshuffle.")
 
-        if not is_owner:
+        if not can_control:
             st.info("You're a member. Ask the owner to change the aria.")
         else:
             new_count = st.number_input("Number of takes", min_value=3, max_value=10, value=max(3, len(versions)), step=1)
