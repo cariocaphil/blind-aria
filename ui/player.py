@@ -21,8 +21,12 @@ def show_player_ui(current_work: dict, versions: list[str], party_mode: bool = F
     st.write(f"**{current_work['title']}** — {current_work.get('composer','')}")
     st.caption(f"Takes: {len(versions)}")
 
-    if st.button("⏹ Stop playback", width="stretch"):
-        st.session_state.now_playing = None
+    # Global stop button (useful for stopping any current playback)
+    if st.session_state.now_playing:
+        if st.button("⏹ Stop All Playback", width="stretch", type="secondary"):
+            st.session_state.paused_videos.add(st.session_state.now_playing)  # Mark as paused
+            st.session_state.now_playing = None
+            st.rerun()
 
     st.divider()
 
@@ -40,28 +44,58 @@ def show_player_ui(current_work: dict, versions: list[str], party_mode: bool = F
 
         # Apply background color based on whether the take has been played
         if is_played:
-            st.markdown(f'<div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #28a745;"><h3 style="margin-top: 0;">Take {idx} ✅</h3></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #28a745;"><h3 style="margin-top: 0;">Take {idx} ✓</h3></div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #0066cc;"><h3 style="margin-top: 0;">Take {idx}</h3></div>', unsafe_allow_html=True)
 
-        c1, c2 = st.columns([1, 1])
-        with c1:
-            listen_label = "✅ Played" if is_played else "🎧 Listen"
-            listen_type = "secondary" if is_played else "primary"
-            if st.button(listen_label, key=f"listen_{nk}", width="stretch", type=listen_type):
-                # Validate video exists before playing
-                meta = yt_oembed(vid)
-                if not meta:
-                    st.error(f"❌ Take {idx}: Video link is broken or unavailable. Please try another take.")
-                else:
-                    st.session_state.now_playing = vid
-                    played_set.add(vid)
-                    st.rerun()
-
-        with c2:
-            if st.button("⏹ Stop", key=f"stop_{nk}", width="stretch"):
-                if st.session_state.now_playing == vid:
-                    st.session_state.now_playing = None
+        # Single button per take - Play/Stop/Resume functionality
+        if st.session_state.now_playing == vid:
+            # Currently playing this take - show Stop button
+            if st.button("⏹ Stop", key=f"stop_{nk}", width="stretch", type="secondary"):
+                st.session_state.now_playing = None
+                st.session_state.paused_videos.add(vid)  # Mark as paused
+                st.rerun()
+        else:
+            # Not playing this take - show Play/Resume buttons
+            is_paused = vid in st.session_state.paused_videos
+            
+            if is_paused:
+                # Show Resume and Play from beginning options
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("▶️ Resume", key=f"resume_{nk}", width="stretch", type="primary"):
+                        # Validate video exists before playing
+                        meta = yt_oembed(vid)
+                        if not meta:
+                            st.error(f"❌ Take {idx}: Video link is broken or unavailable. Please try another take.")
+                        else:
+                            st.session_state.now_playing = vid
+                            st.session_state.paused_videos.discard(vid)  # Clear paused state
+                            st.rerun()
+                with col2:
+                    if st.button("🔄 Play from Beginning", key=f"restart_{nk}", width="stretch", type="secondary"):
+                        # Validate video exists before playing
+                        meta = yt_oembed(vid)
+                        if not meta:
+                            st.error(f"❌ Take {idx}: Video link is broken or unavailable. Please try another take.")
+                        else:
+                            st.session_state.now_playing = vid
+                            st.session_state.paused_videos.discard(vid)  # Clear paused state
+                            played_set.add(vid)
+                            st.rerun()
+            else:
+                # Normal play button
+                button_label = "▶️ Play" if not is_played else "▶️ Play Again"
+                button_type = "primary" if not is_played else "secondary"
+                if st.button(button_label, key=f"listen_{nk}", width="stretch", type=button_type):
+                    # Validate video exists before playing
+                    meta = yt_oembed(vid)
+                    if not meta:
+                        st.error(f"❌ Take {idx}: Video link is broken or unavailable. Please try another take.")
+                    else:
+                        st.session_state.now_playing = vid
+                        played_set.add(vid)
+                        st.rerun()
 
         if st.session_state.now_playing == vid:
             yt_audio_only(vid, autoplay=True)
