@@ -27,7 +27,8 @@ def load_catalog():
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     works = data.get("works", [])
     for w in works:
-        w["_search"] = " ".join([w.get("title", ""), w.get("composer", ""), *w.get("aliases", [])]).lower()
+        aliases = w.get("aliases") or []
+        w["_search"] = " ".join([w.get("title", ""), w.get("composer", ""), *aliases]).lower()
     return works
 
 
