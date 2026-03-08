@@ -19,3 +19,5 @@ def init_session_state() -> None:
         st.session_state.wants_party_mode = False
     if "active_session_id" not in st.session_state:
         st.session_state.active_session_id = None
+    if "paused_videos" not in st.session_state:
+        st.session_state.paused_videos = set()
