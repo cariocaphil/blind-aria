@@ -165,7 +165,7 @@ if len(versions) < MIN_VERSIONS_REQUIRED:
 # Party Owner Controls
 # =========================
 if party_mode:
-    owner_controls_ui(sb, st.session_state.active_session_id, party_user_id, party_session, current_work, versions)
+    owner_controls_ui(sb, st.session_state.active_session_id, party_user_id, party_session, current_work, versions, is_invite_link)
 
 
 # =========================
