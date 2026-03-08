@@ -1674,96 +1674,98 @@
         }
       ]
     },
-    {
-      "id": "schubert_erloenkoenig_d328",
-      "title": "Erlkönig, D. 328",
-      "composer": "Schubert",
-      "aliases": ["erlkönig", "erloenkoenig", "erlking", "schubert erlkonig", "d 328"],
-      "videos": [
-        { "yt": "JS91p-vmSf0" },
-        { "yt": "LzUhVPcEoao" },
-        { "yt": "a2J9Yn2YjjE" },
-        { "yt": "sfQeLgFmNEI" },
-        { "yt": "m0Wwr582RGs" }
-      ]
-    },
-    {
-      "id": "schubert_gretchen_am_spinnrade_d118",
-      "title": "Gretchen am Spinnrade, D. 118",
-      "composer": "Schubert",
-      "aliases": ["gretchen am spinnrade", "schubert gretchen", "d 118", "margarete am spinnrade"],
-      "videos": [
-        { "yt": "HOAg01lmVGs" },
-        { "yt": "MY0eeotMDi8" },
-        { "yt": "kJfXbXN8mbE" },
-        { "yt": "h1M0arxO8fA" },
-        { "yt": "njL7ib-JzO8" }
-      ]
-    },
-    {
-      "id": "brahms_von_ewiger_liebe_op43_1",
-      "title": "Von ewiger Liebe, Op. 43 No. 1",
-      "composer": "Brahms",
-      "aliases": ["von ewiger liebe", "brahms von ewiger liebe", "op 43 no 1", "op. 43/1"],
-      "videos": [
-        { "yt": "AAYFuyI2Z0c" },
-        { "yt": "YvH1tOy3hMk" },
-        { "yt": "e5s7Q23jH4k" },
-        { "yt": "bK9shV3lY1Q" },
-        { "yt": "Jd8UpPXgB6E" }
-      ]
-    },
-    {
-      "id": "brahms_wiegenlied_op49_4",
-      "title": "Wiegenlied (Op. 49 No. 4)",
-      "composer": "Brahms",
-      "aliases": ["wiegenlied", "brahms lullaby", "lullaby", "op 49 no 4"],
-      "videos": [
-        { "yt": "tomiDVjLRH0" },
-        { "yt": "0DNxkQv0Bgk" },
-        { "yt": "Z-8j9rDJxNk" },
-        { "yt": "P4Nu3c3syag" },
-        { "yt": "9d7wzJ_lz20" }
-      ]
-    },
-    {
-      "id": "brahms_o_tod_wie_bitter_bist_du_op121_3",
-      "title": "O Tod, wie bitter bist du (Op. 121 No. 3)",
-      "composer": "Brahms",
-      "aliases": ["o tod wie bitter bist du", "vier ernste gesaenge", "op 121"],
-      "videos": [
-        { "yt": "X8LDO0jl8fI" },
-        { "yt": "f1mkpWk4LXw" },
-        { "yt": "R1Q2Mfc5oY8" },
-        { "yt": "pT3v8yO7L1E" },
-        { "yt": "mK9Pw9Fz_xc" }
-      ]
-    },
-    {
-      "id": "wolf_verborgenheit_moerike",
-      "title": "Verborgenheit (Mörike-Lieder)",
-      "composer": "Hugo Wolf",
-      "aliases": ["verborgenheit", "wolf verborgenheit", "moerike lieder verborgenheit"],
-      "videos": [
-        { "yt": "NkCr2gffdAk" },
-        { "yt": "meHl4V1_RYE" },
-        { "yt": "Cj3pRs4DxQo" },
-        { "yt": "pQ8kLz9xQj4" },
-        { "yt": "B2p9q7F0gKs" }
-      ]
-    },
-    {
-      "id": "wolf_auf_ein_altes_bild_moerike",
-      "title": "Auf ein altes Bild (Mörike-Lieder)",
-      "composer": "Hugo Wolf",
-      "aliases": ["auf ein altes bild", "wolf auf ein altes bild", "moerike lieder"],
-      "videos": [
-        { "yt": "0lyra3JhY_I" },
-        { "yt": "yTgkaNmxTP8" },
-        { "yt": "xmRPQsaCKkQ" },
-        { "yt": "Euu9ime1HK8" },
-        { "yt": "u8Df3PskwL0" }
-      ]
-    }
+    [
+  {
+    "id": "schubert_erloenkoenig_d328",
+    "title": "Erlkönig, D. 328",
+    "composer": "Schubert",
+    "aliases": ["erlkönig", "erloenkoenig", "erlking", "schubert erlkonig", "d 328"],
+    "videos": [
+      { "yt": "DKc7wlfDQU8" },
+      { "yt": "a2J9Yn2YjjE" },
+      { "yt": "Jd7ODIGY6Bk" },
+      { "yt": "3Y1g0c747x0" },
+      { "yt": "tQDfIoeTQZQ" }
+    ]
+  },
+  {
+    "id": "schubert_gretchen_am_spinnrade_d118",
+    "title": "Gretchen am Spinnrade, D. 118",
+    "composer": "Schubert",
+    "aliases": ["gretchen am spinnrade", "schubert gretchen", "d 118", "margarete am spinnrade"],
+    "videos": [
+      { "yt": "IeDtjC41hPI" },
+      { "yt": "kJfXbXN8mbE" },
+      { "yt": "9MEAAM23-Q4" },
+      { "yt": "Nz8NugKVFS4" },
+      { "yt": "6-RjxuXSuPw" }
+    ]
+  },
+  {
+    "id": "brahms_von_ewiger_liebe_op43_1",
+    "title": "Von ewiger Liebe, Op. 43 No. 1",
+    "composer": "Brahms",
+    "aliases": ["von ewiger liebe", "brahms von ewiger liebe", "op 43 no 1", "op. 43/1"],
+    "videos": [
+      { "yt": "OZdZWp6q-ho" },
+      { "yt": "AAYFuyI2Z0c" },
+      { "yt": "74z-umoTuzM" },
+      { "yt": "RsO1RHvEIgs" },
+      { "yt": "oxV1RVa2rKY" }
+    ]
+  },
+  {
+    "id": "brahms_wiegenlied_op49_4",
+    "title": "Wiegenlied (Op. 49 No. 4)",
+    "composer": "Brahms",
+    "aliases": ["wiegenlied", "brahms lullaby", "lullaby", "op 49 no 4"],
+    "videos": [
+      { "yt": "T--2T84SZms" },
+      { "yt": "3nNvz8UFEHY" },
+      { "yt": "ga0mBWIF6Jw" },
+      { "yt": "MwYflWn0R3Y" },
+      { "yt": "gazxkAjk0wc" }
+    ]
+  },
+  {
+    "id": "brahms_o_tod_wie_bitter_bist_du_op121_3",
+    "title": "O Tod, wie bitter bist du (Op. 121 No. 3)",
+    "composer": "Brahms",
+    "aliases": ["o tod wie bitter bist du", "vier ernste gesaenge", "op 121"],
+    "videos": [
+      { "yt": "9t4IREKbYjU" },
+      { "yt": "qlRfwl0P0F0" },
+      { "yt": "u-axHd5Rtbo" },
+      { "yt": "PNKXJqndQ_U" },
+      { "yt": "hNPVySql4Wk" }
+    ]
+  },
+  {
+    "id": "wolf_verborgenheit_moerike",
+    "title": "Verborgenheit (Mörike-Lieder)",
+    "composer": "Hugo Wolf",
+    "aliases": ["verborgenheit", "wolf verborgenheit", "moerike lieder verborgenheit"],
+    "videos": [
+      { "yt": "Y3ujaqFHwNA" },
+      { "yt": "6pzrfy5VMuw" },
+      { "yt": "MvcekBeHzM0" },
+      { "yt": "exrUOreGWZA" },
+      { "yt": "IsA5HchAdU4" }
+    ]
+  },
+  {
+    "id": "wolf_auf_ein_altes_bild_moerike",
+    "title": "Auf ein altes Bild (Mörike-Lieder)",
+    "composer": "Hugo Wolf",
+    "aliases": ["auf ein altes bild", "wolf auf ein altes bild", "moerike lieder"],
+    "videos": [
+      { "yt": "0lyra3JhY_I" },
+      { "yt": "Euu9ime1HK8" },
+      { "yt": "yTgkaNmxTP8" },
+      { "yt": "NfjcVoipx0k" },
+      { "yt": "A0gWsiKf8aM" }
+    ]
+  }
+]
   ]
 }
