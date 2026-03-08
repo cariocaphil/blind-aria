@@ -1674,6 +1674,7 @@
         }
       ]
     },
+    [
   {
     "id": "schubert_erloenkoenig_d328",
     "title": "Erlkönig, D. 328",
@@ -1750,6 +1751,19 @@
       { "yt": "MvcekBeHzM0" },
       { "yt": "exrUOreGWZA" },
       { "yt": "IsA5HchAdU4" }
+    ]
+  },
+  {
+    "id": "wolf_auf_ein_altes_bild_moerike",
+    "title": "Auf ein altes Bild (Mörike-Lieder)",
+    "composer": "Hugo Wolf",
+    "aliases": ["auf ein altes bild", "wolf auf ein altes bild", "moerike lieder"],
+    "videos": [
+      { "yt": "0lyra3JhY_I" },
+      { "yt": "Euu9ime1HK8" },
+      { "yt": "yTgkaNmxTP8" },
+      { "yt": "NfjcVoipx0k" },
+      { "yt": "A0gWsiKf8aM" }
     ]
   }
 ]
