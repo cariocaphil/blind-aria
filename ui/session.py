@@ -16,6 +16,7 @@ from db import (
     update_party_session_takes,
     get_session_members,
 )
+from strings import t
 from utils import load_catalog, pick_versions, set_session_param
 
 
@@ -26,22 +27,22 @@ def create_session_ui(sb) -> str:
     Returns:
         session_id of the created session, or None if not created
     """
-    st.subheader("Party mode")
-    st.write("Create a shared listening session and send the link to a friend.")
-    title = st.text_input("Session title", value="Blind listening session")
-    versions_count = st.number_input("Number of takes", min_value=3, max_value=10, value=5, step=1)
+    st.subheader(t("party_mode_label"))
+    st.write(t("party_mode_description"))
+    title = st.text_input(t("session_title_label"), value=t("session_title_default"))
+    versions_count = st.number_input(t("number_of_takes_label"), min_value=3, max_value=10, value=5, step=1)
 
-    choice_mode = st.radio("Choose aria", ["Random", "Search"], horizontal=True)
+    choice_mode = st.radio(t("choose_aria_label"), [t("random"), t("search")], horizontal=True)
     chosen_work = None
     
     works = load_catalog()
     eligible_works = [w for w in works if len([v.get("yt") for v in w.get("videos", []) if v.get("yt")]) >= MIN_VERSIONS_REQUIRED]
 
-    if choice_mode == "Random":
+    if choice_mode == t("random"):
         chosen_work = random.choice(eligible_works)
-        st.info(f"Random pick: **{chosen_work['title']} — {chosen_work.get('composer','')}**")
+        st.info(f"{t('random_pick_prefix')}**{chosen_work['title']} — {chosen_work.get('composer','')}**")
     else:
-        q = st.text_input("Search", placeholder="e.g. Don Giovanni, Vissi d'arte, Mozart")
+        q = st.text_input(t("search"), placeholder=t("search_placeholder"))
         matches = [w for w in eligible_works if q.strip().lower() in w["_search"]] if q.strip() else []
         if matches:
             labels = {f'{w["title"]} — {w.get("composer","")}': w for w in matches}
@@ -50,7 +51,7 @@ def create_session_ui(sb) -> str:
         elif q.strip():
             st.warning(f"No eligible matches (need ≥ {MIN_VERSIONS_REQUIRED} versions).")
 
-    if chosen_work and st.button("Create shared session", width="stretch"):
+    if chosen_work and st.button(t("create_session_button"), width="stretch"):
         vids = pick_versions(chosen_work, int(versions_count))
         if len(vids) < MIN_VERSIONS_REQUIRED:
             st.error("Not enough versions in this work.")
@@ -72,19 +73,19 @@ def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_sessi
     is_owner = party_session.get("owner_id") == party_user_id
     can_control = is_owner or is_invite_link
 
-    with st.expander("Session controls", expanded=False):
+    with st.expander(t("session_controls_label"), expanded=False):
         # Show session members
         members = get_session_members(sb, party_session_id)
         if members:
-            st.subheader("Session Members")
+            st.subheader(t("session_members_label"))
             for member in members:
-                role_icon = "👑" if member.get("role") == "owner" else "👤"
+                role_icon = t("owner_icon") if member.get("role") == "owner" else t("member_icon")
                 st.write(f"{role_icon} {member.get('user_id', 'Unknown')}")
             st.divider()
 
         cA, cB = st.columns([1, 1])
         with cA:
-            if st.button("🔄 Refresh session", width="stretch"):
+            if st.button(t("refresh_button"), width="stretch"):
                 st.rerun()
         with cB:
             if can_control:
@@ -95,15 +96,15 @@ def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_sessi
         if not can_control:
             st.info("You're a member. Ask the owner to change the aria.")
         else:
-            new_count = st.number_input("Number of takes", min_value=3, max_value=10, value=max(3, len(versions)), step=1)
+            new_count = st.number_input(t("number_of_takes_label"), min_value=3, max_value=10, value=max(3, len(versions)), step=1)
 
-            pick_mode = st.radio("Pick new aria", ["Random", "Search"], horizontal=True, key="owner_pick_mode")
+            pick_mode = st.radio("Pick new aria", [t("random"), t("search")], horizontal=True, key="owner_pick_mode")
             selected_work = None
             
             works = load_catalog()
             eligible_works = [w for w in works if len([v.get("yt") for v in w.get("videos", []) if v.get("yt")]) >= MIN_VERSIONS_REQUIRED]
 
-            if pick_mode == "Random":
+            if pick_mode == t("random"):
                 selected_work = random.choice(eligible_works)
                 st.write(f"Next: **{selected_work['title']} — {selected_work.get('composer','')}**")
             else:
@@ -129,12 +130,12 @@ def owner_controls_ui(sb, party_session_id: str, party_user_id: str, party_sessi
                         st.error(f"Could not update session: {e}")
 
             with col2:
-                if st.button("🔀 Reshuffle takes (same aria)", width="stretch"):
+                if st.button(t("reshuffle_button"), width="stretch"):
                     new_vids = pick_versions(current_work, int(new_count))
                     try:
                         update_party_session_takes(sb, party_session_id, new_vids)
                         st.session_state.now_playing = None
-                        st.success("Takes reshuffled.")
+                        st.success(t("reshuffled_success"))
                         st.rerun()
                     except Exception as e:
-                        st.error(f"Could not reshuffle takes: {e}")
+                        st.error(t("reshuffled_error", error=str(e)))
