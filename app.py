@@ -8,6 +8,7 @@ import streamlit as st
 
 from auth import require_login_block
 from config import MIN_VERSIONS_REQUIRED
+from strings import t
 from db import (
     get_authed_client,
     get_user_id,
@@ -33,7 +34,7 @@ from utils import (
 # =========================
 # Page Config
 # =========================
-st.set_page_config(page_title="Blind Aria Trainer", layout="centered")
+st.set_page_config(page_title=t("page_title"), layout="centered")
 
 
 # =========================
@@ -85,7 +86,7 @@ if party_mode:
             set_session_param(party_session_id)
 
         except Exception as e:
-            st.error(f"Could not join/load session: {e}")
+            st.error(t("join_session_error", error=str(e)))
             st.stop()
 
     if not party_session:
@@ -102,17 +103,17 @@ if party_mode:
     shared_video_ids = party_session.get("video_ids") or []
     current_work = next((w for w in works if w["id"] == work_id), None)
     if not current_work:
-        st.error("Session work_id not found in local works.json.")
+        st.error(t("work_not_found_error"))
         st.stop()
     versions = [vid for vid in shared_video_ids if vid]
     mode_label = f"Party: {party_session.get('title', 'Blind session')}"
 else:
-    st.subheader("Solo mode")
+    st.subheader(t("solo_mode_label"))
     c1, c2 = st.columns([1, 1])
     with c1:
-        solo_mode = st.radio("Mode", ["Random aria", "Search"], horizontal=True)
+        solo_mode = st.radio(t("mode_selection"), [t("random_aria"), t("search")], horizontal=True)
     with c2:
-        versions_count = st.number_input("Number of takes (max)", min_value=3, max_value=10, value=5, step=1)
+        versions_count = st.number_input(t("number_of_takes_label"), min_value=3, max_value=10, value=5, step=1)
 
     def set_random_work_id():
         w = random.choice([w for w in works if len([v.get("yt") for v in w.get("videos", []) if v.get("yt")]) >= MIN_VERSIONS_REQUIRED])
@@ -124,7 +125,7 @@ else:
     if "solo_work_id" not in st.session_state:
         set_random_work_id()
 
-    if solo_mode == "Random aria":
+    if solo_mode == t("random_aria"):
         x1, x2 = st.columns([1, 1])
         with x1:
             if st.button("🎲 New random aria", width="stretch"):
@@ -157,7 +158,7 @@ else:
     mode_label = "Solo"
 
 if len(versions) < MIN_VERSIONS_REQUIRED:
-    st.error("This selection has fewer than 3 takes.")
+    st.error(t("fewer_takes_error", min_versions=MIN_VERSIONS_REQUIRED))
     st.stop()
 
 
