@@ -1,6 +1,7 @@
 """
 Blind Aria Trainer - Main Application
 """
+# Force rebuild - v2
 
 import random
 
