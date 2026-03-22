@@ -77,6 +77,7 @@ def require_login_block(invited: bool = False) -> None:
                         "user_id": user_id,
                         "email": sent_email,
                         "access_token": access_token,
+                        "refresh_token": getattr(session, "refresh_token", None) or (session.get("refresh_token") if isinstance(session, dict) else None),
                     }
                     st.success("Logged in.")
                     st.rerun()

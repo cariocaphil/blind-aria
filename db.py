@@ -129,6 +129,43 @@ def load_note(sb, session_id: str, user_id: str, work_id: str, video_id: str) ->
 # =========================
 # Authentication & User Info
 # =========================
+def refresh_access_token() -> bool:
+    """
+    Refresh the access token using the refresh token.
+    Returns True if refresh succeeded, False otherwise.
+    """
+    auth = st.session_state.get("sb_auth") or {}
+    refresh_token = auth.get("refresh_token")
+    
+    if not refresh_token:
+        return False
+    
+    try:
+        sb = create_sb_client(None)
+        response = sb.auth.refresh_session(refresh_token)
+        
+        # Extract new tokens from response
+        session = getattr(response, "session", None) or (response.get("session") if isinstance(response, dict) else None)
+        
+        if session is None:
+            return False
+        
+        new_access_token = getattr(session, "access_token", None) or (session.get("access_token") if isinstance(session, dict) else None)
+        new_refresh_token = getattr(session, "refresh_token", None) or (session.get("refresh_token") if isinstance(session, dict) else None)
+        
+        if not new_access_token:
+            return False
+        
+        # Update session state with new tokens
+        st.session_state["sb_auth"]["access_token"] = new_access_token
+        if new_refresh_token:
+            st.session_state["sb_auth"]["refresh_token"] = new_refresh_token
+        
+        return True
+    except Exception:
+        return False
+
+
 def is_logged_in() -> bool:
     """Check if user is authenticated."""
     return bool(st.session_state.get("sb_auth"))
@@ -141,9 +178,18 @@ def get_user_id() -> Optional[str]:
 
 
 def get_authed_client():
-    """Get an authenticated Supabase client."""
+    """Get an authenticated Supabase client with automatic token refresh."""
     auth = st.session_state.get("sb_auth") or {}
     token = auth.get("access_token")
+    
     if not token:
         return create_sb_client(None)
+    
+    # Try to refresh token preemptively if we have a refresh token
+    if auth.get("refresh_token"):
+        refresh_access_token()
+        # Get updated token after refresh
+        auth = st.session_state.get("sb_auth") or {}
+        token = auth.get("access_token")
+    
     return create_sb_client(token)
