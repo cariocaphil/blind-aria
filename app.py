@@ -16,6 +16,7 @@ from db import (
     load_party_session,
     ensure_member,
     get_member_role,
+    refresh_access_token,
 )
 from state import init_session_state
 from ui.header import show_header
@@ -86,8 +87,23 @@ if party_mode:
             set_session_param(party_session_id)
 
         except Exception as e:
-            st.error(t("join_session_error", error=str(e)))
-            st.stop()
+            error_str = str(e)
+            # Check if it's a JWT expired error
+            if "JWT expired" in error_str or "PGRST303" in error_str:
+                # Try to refresh token
+                if refresh_access_token():
+                    st.info("Session expired. Refreshing... Please try again.")
+                    st.rerun()
+                else:
+                    st.error("Session expired and could not refresh. Please log in again.")
+                    st.session_state.pop("sb_auth", None)
+                    st.session_state.active_session_id = None
+                    from utils import clear_session_param
+                    clear_session_param()
+                    st.stop()
+            else:
+                st.error(t("join_session_error", error=error_str))
+                st.stop()
 
     if not party_session:
         create_session_ui(sb)
