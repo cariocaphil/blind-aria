@@ -60,18 +60,40 @@ Click the **✕** button to remove an alias.
 
 You need at least **3 YouTube videos** for the system to accept the entry.
 
-**How to get a YouTube ID:**
-1. Open the YouTube video
+#### Option A: YouTube Search (AI-Assisted) ✨
+
+1. Enter a search query describing the aria or piece:
+   - Example: "Schumann Die alten bösen Lieder"
+   - Example: "Mozart Don Giovanni champagne aria"
+2. Click **🔍 Search YouTube**
+3. The system will:
+   - Generate 3 progressively-specific search queries
+   - Fetch results from YouTube's API
+   - Filter out instrumental/karaoke/tutorial recordings
+   - Rank results by quality (Lebendige Vergangenheit, Preiser, etc. ranked higher)
+4. Check the videos you want (top 3–5 are pre-selected)
+5. Click **✓ Use selected videos**
+6. Selected IDs are automatically added to your form
+
+**Requirements:**
+- `YOUTUBE_API_KEY` environment variable must be set
+- YouTube API quota available
+- If unavailable, a warning appears and you can use manual entry instead
+
+#### Option B: Manual Entry
+
+1. Find YouTube videos for the piece
 2. Copy the video ID from the URL:
    - URL: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
    - ID: `dQw4w9WgXcQ`
 3. Paste into the form
+4. Repeat for at least 3 different videos
 
 **Tips:**
 - Different singers, different interpretations
 - Different recordings (live vs studio)
 - Leave blank fields empty (they're ignored)
-- Click "Add YouTube ID" to add more than 5
+- Click "Add YouTube ID" to add more than 5 fields
 
 ### Step 4: Review the Preview
 
@@ -147,8 +169,9 @@ The system will:
 
 ## Future Features (Coming Soon)
 
-- ☐ YouTube search integration (type query, get video suggestions)
-- ☐ AI-assisted metadata (auto-fill composer, aliases)
+- ✅ YouTube search integration (type query, get video suggestions)
+- ☐ AI-assisted metadata (auto-fill composer, aliases from search)
+- ☐ Duplicate detection preview (warn if similar work exists)
 - ☐ Bulk import from CSV
 - ☐ Admin dashboard with statistics
 - ☐ Approval workflow for suggested works

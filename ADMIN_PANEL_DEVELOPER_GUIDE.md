@@ -17,28 +17,29 @@ The admin panel is designed as a modular, extensible feature with clear separati
 │  - Three-branch conditional rendering:                  │
 │    ├─ Not logged in → show admin_login_block()          │
 │    ├─ Logged in (non-admin) → show "admin only" msg     │
-│    └─ Logged in (admin) → show full form                │
+│    └─ Logged in (admin) → show full form + suggestions  │
 │  - Form state management                                │
-│  - Calls utility functions for logic                     │
-└────────────┬──────────────────────────┬────────────────┘
-             │                          │
-             ▼                          ▼
-┌──────────────────────┐   ┌──────────────────────────┐
-│  auth.py             │   │  utils.py                │
-│  - admin_login_      │   │  (business logic layer)  │
-│    block()           │   │  - Validation            │
-│  - OTP verification  │   │  - Normalization         │
-└──────────────────────┘   │  - Storage I/O           │
-                           │  - Orchestration         │
-                           └──────────┬───────────────┘
-                                      │
-                                      ▼
-                           ┌──────────────────────────┐
-                           │  config.py               │
-                           │  - ADMIN_EMAILS          │
-                           │  - MIN_VERSIONS_REQUIRED │
-                           │  - DATA_PATH             │
-                           └──────────────────────────┘
+│  - Calls utility and suggestion functions               │
+└──────┬────────────────────────────┬──────────┬──────────┘
+       │                            │          │
+       ▼                            ▼          ▼
+┌──────────────┐   ┌──────────────────┐  ┌─────────────────┐
+│ auth.py      │   │ utils.py         │  │ ai_suggestions.py│
+│ - admin_     │   │ (business logic) │  │ (helpers)       │
+│   login_block│   │ - Validation     │  │ - generate_     │
+│ - OTP        │   │ - Normalization  │  │   search_queries│
+│   verification│  │ - Storage I/O    │  │ - search_       │
+└──────────────┘   │ - Orchestration  │  │   youtube()     │
+                   └────────┬─────────┘  │ - filter_       │
+                            │            │   candidates()  │
+                            ▼            │ - rank_         │
+                   ┌──────────────────┐  │   candidates()  │
+                   │ config.py        │  │ - suggest_      │
+                   │ - ADMIN_EMAILS   │  │   videos()      │
+                   │ - MIN_VERSIONS_  │  │ - find_similar_ │
+                   │   REQUIRED       │  │   works()       │
+                   │ - DATA_PATH      │  └─────────────────┘
+                   └──────────────────┘
 ```
 
 ## Key Design Principles
@@ -69,20 +70,56 @@ User Input (UI) → Normalize → Validate → Create → Persist → Clear Cach
 #     aliases = suggest_aliases(title, composer)
 ```
 
-#### B. YouTube Integration
-**Location**: `ui/admin_panel.py` - Currently users manually paste YouTube IDs
+#### B. YouTube Integration ✅ IMPLEMENTED
+**Location**: `ui/ai_suggestions.py` and `ui/admin_panel.py`
 
-**Future**: Search YouTube and auto-suggest videos:
+**Implementation:**
+- `generate_search_queries()` creates 3 refined search queries
+- `search_youtube()` calls YouTube Data API v3 /search endpoint
+- `filter_candidates()` removes instrumental/karaoke/tutorial videos
+- `rank_candidates()` scores by source (Lebendige Vergangenheit +3, Preiser +2, live +1)
+- `suggest_videos()` runs full pipeline and returns top results
+- UI shows checkboxes with pre-selected top 3–5 results
+- User clicks "Use selected videos" to merge into form
+
+**Environment Requirements:**
 ```python
-# TODO: YouTube search integration
-# if st.button("🔍 Search YouTube"):
-#     results = search_youtube(title, composer)
-#     for result in results:
-#         if st.button(f"Add: {result['title']}"):
-#             video_ids.append(result['id'])
+# Set in environment or .streamlit/secrets.toml
+os.getenv("YOUTUBE_API_KEY")  # YouTube Data API v3 key
 ```
 
-#### C. Storage Backend
+**Extending with Caching:**
+```python
+# Add to search_youtube() for quota efficiency:
+@st.cache_data(ttl=3600)
+def search_youtube(query: str) -> list[dict]:
+    ...
+```
+
+#### C. Duplicate Detection ✅ IMPLEMENTED
+**Location**: `ui/ai_suggestions.py`
+
+**Implementation:**
+- `find_similar_works()` detects suspiciously similar titles/composers
+- Uses substring matching (title_lower in existing_title, etc.)
+- Checks against all three fields: title, composer, _search (aliases)
+
+**Future Enhancement:**
+```python
+# Replace substring matching with fuzzy:
+from rapidfuzz import fuzz
+
+def find_similar_works(title: str, composer: str, works: list[dict]) -> list[dict]:
+    threshold = 80
+    matches = []
+    for w in works:
+        if (fuzz.ratio(title.lower(), w['title'].lower()) > threshold or
+            fuzz.ratio(composer.lower(), w['composer'].lower()) > threshold):
+            matches.append(w)
+    return matches
+```
+
+#### D. Storage Backend
 **Location**: `utils.py` - Currently uses `load_catalog_file()` and `save_catalog_file()`
 
 **Future**: Migrate from JSON file to Supabase:
@@ -108,7 +145,7 @@ def add_work_to_supabase(work: dict):
     return result.data
 ```
 
-#### D. Admin User Management
+#### E. Admin User Management
 **Location**: `config.py` - Currently hardcoded `ADMIN_EMAILS`
 
 **Future**: Move to Supabase table:
@@ -198,10 +235,74 @@ def is_admin_user() -> bool:
 - Expander for clean layout
 - Form state management via `st.session_state`
 - Dynamic list management (aliases, videos)
+- YouTube search suggestion UI with checkboxes
 - JSON preview (admin only)
 - Validation error display (admin only)
 **Status**: ✓ Complete, all features working
 **Future**: Could split into smaller helper functions if UI grows
+
+### In `ui/ai_suggestions.py`
+
+#### `generate_search_queries(query: str) -> list[str]`
+**Purpose**: Create 3 progressively-specific search queries from base string
+**Returns**: List of 3 strings with suffixes: "Lied", "live recital", "Lebendige Vergangenheit"
+**Examples**: 
+- Input: "Schumann Die alten bösen Lieder"
+- Output: ["Schumann Die alten bösen Lieder Lied", "Schumann Die alten bösen Lieder live recital", ...]
+**Status**: ✓ Complete
+**Future**: Could add more suffix variants based on user feedback
+
+#### `search_youtube(query: str) -> list[dict]`
+**Purpose**: Call YouTube Data API v3 /search endpoint
+**Returns**: List of dicts: `{"videoId": str, "title": str, "channel": str}`
+**Requirements**: `YOUTUBE_API_KEY` environment variable must be set
+**Behavior**:
+- Returns empty list if key missing or API errors (never crashes)
+- Deduplicates by videoId
+- Fetches up to 5 results per query
+- Shows warning in Streamlit on API errors
+**Status**: ✓ Complete, production-ready
+**Future**: Add `@st.cache_data(ttl=3600)` for quota reduction
+
+#### `filter_candidates(videos: list[dict]) -> list[dict]`
+**Purpose**: Remove noise videos (instrumental, piano, karaoke, etc.)
+**Returns**: Filtered list (never empty if input not empty)
+**Filters**: Title/channel matching (case-insensitive): instrumental, piano, violin, karaoke, tutorial, score, sheet music, backing track, arrangement
+**Status**: ✓ Complete, effective for typical searches
+**Future**: Could add user-configurable filter terms
+
+#### `rank_candidates(videos: list[dict]) -> list[dict]`
+**Purpose**: Score and sort videos by quality indicators
+**Returns**: Sorted list (highest score first)
+**Scoring**:
+- +3: "lebendige vergangenheit" (classic vocal label)
+- +2: "preiser" (high-quality label)
+- +1: "live" | "recital" | "liederabend"
+- -2: soft penalty if instrumental/piano/violin still present
+**Status**: ✓ Complete
+**Future**: Could use real ML model for scoring
+
+#### `suggest_videos(query: str, max_results: int = 8) -> list[dict]`
+**Purpose**: Full pipeline - generate queries → fetch → filter → rank
+**Returns**: List of top results with attached `_score` for debugging
+**Flow**:
+1. `generate_search_queries(query)` → 3 queries
+2. For each query: `search_youtube()` and deduplicate by videoId
+3. `filter_candidates()` → remove noise
+4. `rank_candidates()` → sort by quality
+5. Return top `max_results` with scores
+**Status**: ✓ Complete, ready for production
+**Future**: Could add duplicate detection across pipelines
+
+#### `find_similar_works(title: str, composer: str, works: list[dict]) -> list[dict]`
+**Purpose**: Detect duplicate or suspiciously similar works
+**Returns**: List of existing works that are similar
+**Matching**: Substring matching (case-insensitive) on:
+- title (both directions: substring and contains)
+- composer (if given)
+- _search index (pre-built field covering aliases)
+**Status**: ✓ Complete, basic functionality working
+**Future**: Replace substring with fuzzy matching (e.g., rapidfuzz) for robustness
 
 ## State Management
 
