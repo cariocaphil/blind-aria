@@ -162,3 +162,211 @@ def checkbox_group(title: str, options: list[str], selected: list[str], key_pref
         if st.checkbox(opt, value=default, key=k):
             out.append(opt)
     return out
+
+
+# =========================
+# Admin Functions
+# =========================
+def is_admin_user() -> bool:
+    """Check if current user is an admin based on email whitelist."""
+    from config import ADMIN_EMAILS
+    
+    auth = st.session_state.get("sb_auth") or {}
+    user_email = auth.get("email", "").lower()
+    
+    # Check if email is in admin whitelist
+    return user_email in [email.lower() for email in ADMIN_EMAILS]
+
+
+def load_catalog_file() -> dict:
+    """
+    Load the raw catalog JSON file.
+    
+    TODO: In the future, this could be replaced with:
+    - Supabase table query
+    - API call to external catalogue service
+    - Cloud storage read
+    
+    Returns a dict with structure: {"works": [work1, work2, ...]}
+    """
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Catalog file not found at: {DATA_PATH}")
+    
+    try:
+        return json.loads(DATA_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Catalog JSON is invalid: {e}")
+
+
+def save_catalog_file(catalog_data: dict) -> None:
+    """
+    Save the catalog JSON file with proper formatting.
+    
+    TODO: In the future, this could be replaced with:
+    - Supabase table insert/update
+    - API call to external catalogue service
+    - Cloud storage write
+    
+    Args:
+        catalog_data: dict with structure {"works": [work1, work2, ...]}
+    
+    Raises:
+        IOError if file write fails
+    """
+    try:
+        content = json.dumps(catalog_data, indent=3, ensure_ascii=False)
+        DATA_PATH.write_text(content, encoding="utf-8")
+    except Exception as e:
+        raise IOError(f"Failed to save catalog file: {e}")
+
+
+def normalize_aliases(aliases: list[str]) -> list[str]:
+    """
+    Clean and deduplicate aliases.
+    - Remove empty strings
+    - Remove duplicates
+    - Strip whitespace
+    """
+    cleaned = [a.strip() for a in (aliases or []) if a and a.strip()]
+    return list(dict.fromkeys(cleaned))  # Remove duplicates while preserving order
+
+
+def normalize_video_ids(video_ids: list[str]) -> list[dict]:
+    """
+    Convert list of video ID strings to the proper schema format.
+    - Remove empty strings
+    - Convert to [{"yt": "id"}, ...]
+    """
+    valid_ids = [vid.strip() for vid in (video_ids or []) if vid and vid.strip()]
+    return [{"yt": vid} for vid in valid_ids]
+
+
+def validate_work_entry(
+    title: str,
+    composer: str,
+    work_id: str,
+    aliases: list[str],
+    video_ids: list[str],
+    existing_ids: list[str],
+) -> tuple[bool, str]:
+    """
+    Validate a work entry before saving.
+    
+    Args:
+        title: Work title
+        composer: Composer name
+        work_id: Unique work ID
+        aliases: List of alternative names
+        video_ids: List of YouTube video IDs
+        existing_ids: List of IDs already in catalogue (for uniqueness check)
+    
+    Returns:
+        (is_valid, error_message)
+    """
+    # Required fields
+    if not title or not title.strip():
+        return False, "Title is required."
+    
+    if not composer or not composer.strip():
+        return False, "Composer is required."
+    
+    if not work_id or not work_id.strip():
+        return False, "ID is required."
+    
+    # Unique ID check
+    if work_id.strip() in existing_ids:
+        return False, f"ID '{work_id}' already exists in catalogue."
+    
+    # Video count validation
+    valid_videos = normalize_video_ids(video_ids)
+    if len(valid_videos) < MIN_VERSIONS_REQUIRED:
+        return False, f"Need at least {MIN_VERSIONS_REQUIRED} YouTube IDs. Currently have {len(valid_videos)}."
+    
+    return True, ""
+
+
+def create_work_entry(
+    title: str,
+    composer: str,
+    work_id: str,
+    aliases: list[str],
+    video_ids: list[str],
+) -> dict:
+    """
+    Create a work entry in the correct schema format.
+    
+    This ensures consistency with existing catalogue entries.
+    
+    Args:
+        title: Work title
+        composer: Composer name
+        work_id: Unique work ID
+        aliases: List of alternative names
+        video_ids: List of YouTube video IDs
+    
+    Returns:
+        Work dict with schema: {
+            "id": str,
+            "title": str,
+            "composer": str,
+            "aliases": list[str],
+            "videos": [{"yt": str}, ...]
+        }
+    """
+    return {
+        "id": work_id.strip(),
+        "title": title.strip(),
+        "composer": composer.strip(),
+        "aliases": normalize_aliases(aliases),
+        "videos": normalize_video_ids(video_ids),
+    }
+
+
+def add_work_to_catalog(
+    title: str,
+    composer: str,
+    work_id: str,
+    aliases: list[str],
+    video_ids: list[str],
+) -> tuple[bool, str]:
+    """
+    Add a new work to the catalogue and persist it.
+    
+    Performs validation, then appends to works.json and saves.
+    
+    Args:
+        title, composer, work_id, aliases, video_ids: Work data
+    
+    Returns:
+        (success, message)
+    """
+    try:
+        # Load current catalogue
+        catalog = load_catalog_file()
+        existing_ids = [w.get("id") for w in catalog.get("works", [])]
+        
+        # Validate
+        is_valid, error_msg = validate_work_entry(
+            title, composer, work_id, aliases, video_ids, existing_ids
+        )
+        if not is_valid:
+            return False, error_msg
+        
+        # Create entry
+        new_work = create_work_entry(title, composer, work_id, aliases, video_ids)
+        
+        # Append and save
+        catalog["works"].append(new_work)
+        save_catalog_file(catalog)
+        
+        # Clear the cached catalogue so next load picks up the new work
+        st.cache_data.clear()
+        
+        return True, f"✓ Added '{title}' to catalogue."
+    
+    except FileNotFoundError as e:
+        return False, f"Error: {e}"
+    except ValueError as e:
+        return False, f"Error: {e}"
+    except IOError as e:
+        return False, f"Error: {e}"

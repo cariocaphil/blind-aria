@@ -24,6 +24,7 @@ from ui.header import show_header
 from ui.session import create_session_ui, owner_controls_ui
 from ui.player import show_player_ui
 from ui.questionnaire import show_questionnaire_ui
+from ui.admin_panel import show_admin_panel
 from utils import (
     clear_session_param,
     get_session_param,
@@ -59,6 +60,13 @@ if is_invite_link and not is_logged_in():
 if (party_mode and not is_invite_link) and not is_logged_in():
     require_login_block(invited=False)
     st.stop()
+
+
+# =========================
+# Admin Panel (if applicable)
+# =========================
+# Only shown if user is logged in AND is in admin whitelist
+show_admin_panel()
 
 
 # =========================

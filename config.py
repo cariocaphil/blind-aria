@@ -15,6 +15,16 @@ DATA_PATH = Path(__file__).parent / "data" / "works.json"
 MIN_VERSIONS_REQUIRED = 3
 
 # =========================
+# Admin Settings
+# =========================
+# Whitelist of user IDs or emails who can add songs to the catalogue.
+# TODO: Later, this could be migrated to a Supabase table (admin_users).
+ADMIN_EMAILS = [
+    "cariocaphil@gmail.com",
+    "max.joneisn@gmail.com",  # Add admin emails here
+]
+
+# =========================
 # Questionnaire Options
 # =========================
 VOICE_PRODUCTION_OPTIONS = [

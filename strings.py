@@ -88,6 +88,28 @@ STRINGS = {
     "owner_icon": "👑",
     "member_icon": "👤",
     
+    # Admin panel
+    "admin_panel_title": "📚 Catalogue Admin",
+    "admin_panel_description": "Add a new aria to the catalogue. Fill in the metadata, provide at least 3 YouTube video IDs, and save.",
+    "admin_panel_login_required": "👤 Log in to contribute to the catalogue. Contact an admin if you'd like to help expand the song collection.",
+    "admin_panel_not_authorized": "🔒 Adding songs is admin-only. If you'd like to contribute, please contact the maintainers.",
+    "admin_field_title": "Title",
+    "admin_field_composer": "Composer",
+    "admin_field_id": "ID (unique identifier)",
+    "admin_field_aliases": "Aliases (alternative names)",
+    "admin_field_alias": "Alias",
+    "admin_field_videos": "YouTube Video IDs",
+    "admin_help_title": "e.g., 'Fin ch'han dal vino'",
+    "admin_help_composer": "e.g., 'Mozart'",
+    "admin_help_id": "Unique identifier in lowercase with underscores. e.g., mozart_don_giovanni_champagne",
+    "admin_help_aliases": "Alternative names for searching (e.g., 'Don Giovanni Champagne Aria', 'Champagne Aria')",
+    "admin_help_videos": "YouTube video IDs. Need at least 3. Blank entries are ignored.",
+    "admin_button_add_alias": "Add alias",
+    "admin_button_add_video": "Add YouTube ID",
+    "admin_section_preview": "Preview",
+    "admin_preview_incomplete": "Fill in title, composer, and ID to see a preview.",
+    "admin_button_save": "💾 Save to Catalogue",
+    
     # Errors & Info
     "no_works_error": "No works have at least {min_versions} versions.",
     "fewer_takes_error": "This selection has fewer than {min_versions} takes.",
