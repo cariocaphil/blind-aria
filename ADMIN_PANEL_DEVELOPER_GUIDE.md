@@ -14,26 +14,31 @@ The admin panel is designed as a modular, extensible feature with clear separati
 ┌─────────────────────────────────────────────────────────┐
 │  ui/admin_panel.py (presentation layer)                 │
 │  - Streamlit UI components                              │
+│  - Three-branch conditional rendering:                  │
+│    ├─ Not logged in → show admin_login_block()          │
+│    ├─ Logged in (non-admin) → show "admin only" msg     │
+│    └─ Logged in (admin) → show full form                │
 │  - Form state management                                │
 │  - Calls utility functions for logic                     │
-└────────────────┬────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│  utils.py (business logic layer)                        │
-│  - Validation: validate_work_entry()                    │
-│  - Normalization: normalize_aliases(), etc.             │
-│  - Storage: load_catalog_file(), save_catalog_file()    │
-│  - Orchestration: add_work_to_catalog()                 │
-└────────────────┬────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│  config.py                                              │
-│  - ADMIN_EMAILS whitelist                               │
-│  - MIN_VERSIONS_REQUIRED constant                        │
-│  - DATA_PATH (works.json location)                       │
-└─────────────────────────────────────────────────────────┘
+└────────────┬──────────────────────────┬────────────────┘
+             │                          │
+             ▼                          ▼
+┌──────────────────────┐   ┌──────────────────────────┐
+│  auth.py             │   │  utils.py                │
+│  - admin_login_      │   │  (business logic layer)  │
+│    block()           │   │  - Validation            │
+│  - OTP verification  │   │  - Normalization         │
+└──────────────────────┘   │  - Storage I/O           │
+                           │  - Orchestration         │
+                           └──────────┬───────────────┘
+                                      │
+                                      ▼
+                           ┌──────────────────────────┐
+                           │  config.py               │
+                           │  - ADMIN_EMAILS          │
+                           │  - MIN_VERSIONS_REQUIRED │
+                           │  - DATA_PATH             │
+                           └──────────────────────────┘
 ```
 
 ## Key Design Principles
@@ -123,6 +128,15 @@ def is_admin_user() -> bool:
 
 ## Function Reference
 
+### In `auth.py`
+
+#### `admin_login_block() -> None`
+**Purpose**: Render OTP login form with catalogue contribution context
+**Used by**: `show_admin_panel()` when user is not logged in
+**Messaging**: "Log in to contribute" (distinct from party mode's "Sign in to play with someone")
+**Implementation**: Wraps existing OTP flow with contextual heading and description
+**Returns**: None (renders UI, sets `st.session_state["sb_auth"]` on successful verification)
+
 ### In `utils.py`
 
 #### `is_admin_user() -> bool`
@@ -175,14 +189,17 @@ def is_admin_user() -> bool:
 ### In `ui/admin_panel.py`
 
 #### `show_admin_panel() -> None`
-**Purpose**: Render the entire admin UI
-**Visibility**: Only renders if `is_admin_user()` returns True
+**Purpose**: Render the entire admin UI to all users with contextual content
+**Visibility**: Always renders as an expandable section; content changes based on auth status:
+  - **Not logged in**: Shows `admin_login_block()` for contextual login
+  - **Logged in (non-admin)**: Shows "admin only" message
+  - **Logged in (admin)**: Shows full form
 **Features**:
 - Expander for clean layout
 - Form state management via `st.session_state`
 - Dynamic list management (aliases, videos)
-- JSON preview
-- Validation error display
+- JSON preview (admin only)
+- Validation error display (admin only)
 **Status**: ✓ Complete, all features working
 **Future**: Could split into smaller helper functions if UI grows
 

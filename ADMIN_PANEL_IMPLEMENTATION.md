@@ -37,7 +37,11 @@ Added 8 new admin-related helper functions:
 Complete admin UI component with:
 
 **Visibility Control:**
-- Only renders if user is logged in AND in admin whitelist
+- Always visible as an expandable section to all users
+- Shows contextual content based on auth status:
+  - **Not logged in**: Shows login form with "Log in to contribute" messaging
+  - **Logged in (non-admin)**: Shows "admin only" message
+  - **Logged in (admin)**: Shows full metadata form for adding songs
 - Uses expander for clean UI
 
 **Form Fields:**
@@ -62,7 +66,15 @@ Complete admin UI component with:
 5. Cache cleared, success message shown
 6. Form resets for next entry
 
-### 4. **strings.py** (Extended)
+### 4. **auth.py** (Extended)
+Added contextual login function for admin panel:
+
+- `admin_login_block()`: OTP authentication form with "Log in to contribute" messaging
+- Distinct from `require_login_block()` used in party mode
+- Reuses existing OTP verification logic but with catalogue contribution context
+- Allows non-logged-in users to log in directly within the admin panel
+
+### 5. **strings.py** (Extended)
 Added 30+ new i18n strings for the admin panel:
 
 - Panel title and description

@@ -9,10 +9,26 @@ To add more admins, edit `config.py` and add emails to the `ADMIN_EMAILS` list.
 
 ## How to Access
 
-1. Log in with your admin email
-2. In the main app, scroll down past the header
-3. You'll see an expandable section labeled **"📚 Catalogue Admin"**
-4. Click to expand it
+The **"📚 Catalogue Admin"** section appears to all users, but the content varies by login status:
+
+### If You're NOT Logged In
+1. Scroll down past the header in the main app
+2. You'll see an expandable section labeled **"📚 Catalogue Admin"**
+3. Click to expand it
+4. You'll see a message: "👤 Log in to contribute to the catalogue..."
+5. Click **"Send code"** to log in directly from this section
+6. Enter your email and verify with the code sent to you
+7. After logging in, refresh or continue to see the full form
+
+### If You're Logged In (But Not Admin)
+1. Scroll down past the header
+2. Click the **"📚 Catalogue Admin"** expander
+3. You'll see: "🔒 Adding songs is admin-only. If you'd like to contribute, please contact the maintainers."
+
+### If You're an Admin
+1. Scroll down past the header
+2. Click the **"📚 Catalogue Admin"** expander
+3. The full form is displayed
 
 ## How to Add a Song
 
