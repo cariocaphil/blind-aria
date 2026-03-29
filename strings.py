@@ -109,6 +109,18 @@ STRINGS = {
     "admin_section_preview": "Preview",
     "admin_preview_incomplete": "Fill in title, composer, and ID to see a preview.",
     "admin_button_save": "💾 Save to Catalogue",
+
+    # Admin panel — AI suggestions
+    "admin_suggest_button": "✨ Suggest Versions",
+    "admin_suggest_query_label": "Search query for AI suggestions",
+    "admin_suggest_query_help": "e.g. 'Schumann Die alten bösen Lieder' — used to find YouTube recordings",
+    "admin_suggest_loading": "Searching YouTube and ranking results…",
+    "admin_suggest_none_found": "No suitable videos found. Try a different query.",
+    "admin_suggest_results_label": "Suggested videos (select to add)",
+    "admin_suggest_use_button": "Use Selected Videos",
+    "admin_suggest_no_selection": "Select at least one video first.",
+    "admin_suggest_added": "Added {n} video ID(s) to the form.",
+    "admin_duplicate_warning": "⚠️ This work may already exist in the catalogue:",
     
     # Errors & Info
     "no_works_error": "No works have at least {min_versions} versions.",
