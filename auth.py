@@ -84,3 +84,67 @@ def require_login_block(invited: bool = False) -> None:
 
                 except Exception as e:
                     st.error(f"Verification failed: {e}")
+
+def admin_login_block() -> None:
+    """Display login UI block specifically for admin panel (OTP via email)."""
+    st.subheader("Log in to contribute")
+    st.caption("Use your email to log in and help expand the song catalogue.")
+
+    if not supabase_available():
+        st.error("Missing dependency: add `supabase>=2.0.0` to requirements.txt and redeploy.")
+        st.stop()
+
+    sb = create_sb_client(None)
+
+    email = st.text_input("Email", key="admin_otp_email", placeholder="you@example.com")
+    
+    if st.button("Send code", width="stretch"):
+        if not email.strip():
+            st.error("Enter an email.")
+        else:
+            try:
+                sb.auth.sign_in_with_otp({"email": email.strip()})
+                st.session_state["admin_otp_email_sent"] = email.strip()
+                st.success("Email sent. Copy the code from the email and paste it below.")
+            except Exception as e:
+                st.error(f"Could not send OTP: {e}")
+
+    sent_email = st.session_state.get("admin_otp_email_sent")
+    if sent_email:
+        code = st.text_input("Code", key="admin_otp_code", placeholder="123456")
+        if st.button("Verify code", width="stretch"):
+            if not code.strip():
+                st.error("Enter the code.")
+            else:
+                try:
+                    response = sb.auth.verify_otp(
+                        {"email": sent_email, "token": code.strip(), "type": "email"}
+                    )
+                    session = getattr(response, "session", None) or (response.get("session") if isinstance(response, dict) else None)
+                    user = getattr(response, "user", None) or (response.get("user") if isinstance(response, dict) else None)
+
+                    if not session or not user:
+                        st.error("Verification failed: no session or user in response.")
+                        st.stop()
+
+                    access_token = getattr(session, "access_token", None) or (session.get("access_token") if isinstance(session, dict) else None)
+                    user_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+                    user_id = user_id or user.get("user_metadata", {}).get("sub")
+                    if isinstance(user, dict):
+                        user_id = user_id or user.get("user_metadata", {}).get("sub")
+
+                    if not access_token or not user_id:
+                        st.error("Login succeeded but access token/user_id missing.")
+                        st.stop()
+
+                    st.session_state["sb_auth"] = {
+                        "user_id": user_id,
+                        "email": sent_email,
+                        "access_token": access_token,
+                        "refresh_token": getattr(session, "refresh_token", None) or (session.get("refresh_token") if isinstance(session, dict) else None),
+                    }
+                    st.success("Logged in!")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"Verification failed: {e}")
