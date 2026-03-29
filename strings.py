@@ -91,6 +91,8 @@ STRINGS = {
     # Admin panel
     "admin_panel_title": "📚 Catalogue Admin",
     "admin_panel_description": "Add a new aria to the catalogue. Fill in the metadata, provide at least 3 YouTube video IDs, and save.",
+    "admin_panel_login_required": "👤 Log in to contribute to the catalogue. Contact an admin if you'd like to help expand the song collection.",
+    "admin_panel_not_authorized": "🔒 Adding songs is admin-only. If you'd like to contribute, please contact the maintainers.",
     "admin_field_title": "Title",
     "admin_field_composer": "Composer",
     "admin_field_id": "ID (unique identifier)",
