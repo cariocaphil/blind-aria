@@ -145,6 +145,43 @@ All strings follow the existing t(key, **kwargs) pattern for i18n support.
 - Positioned before party session or solo mode logic
 - Panel gracefully no-ops if user is not admin
 
+## Session State Management
+
+### Initialization Pattern (Critical for Streamlit)
+
+All form field state is initialized at the top of `show_admin_panel()` BEFORE any widgets are created:
+
+```python
+def show_admin_panel():
+    # Initialize ALL state FIRST
+    if "admin_title" not in st.session_state:
+        st.session_state.admin_title = ""
+    if "admin_composer" not in st.session_state:
+        st.session_state.admin_composer = ""
+    # ... etc ...
+    _init_suggestion_state()  # Initialize AI suggestion state
+    
+    # THEN render widgets (now safe, keys already exist)
+    title = st.text_input(..., key="admin_title")
+```
+
+**Why**: Streamlit forbids modifying session_state values that are already bound to widgets. Pre-initialization ensures keys exist before widget creation.
+
+### Form Reset Pattern
+
+On successful save, use `.pop()` to safely clear widget-bound keys:
+
+```python
+if success:
+    st.success(message)
+    st.session_state.pop("admin_title", None)
+    st.session_state.pop("admin_composer", None)
+    # ... etc ...
+    st.rerun()  # Next render triggers initialization check again
+```
+
+**Why**: `.pop()` removes the key entirely, allowing the initialization check to run again on the next render. This avoids "cannot modify widget-bound session_state" errors.
+
 ## Architecture & Design Decisions
 
 ### Security
