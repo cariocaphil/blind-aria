@@ -20,7 +20,8 @@ MIN_VERSIONS_REQUIRED = 3
 # Whitelist of user IDs or emails who can add songs to the catalogue.
 # TODO: Later, this could be migrated to a Supabase table (admin_users).
 ADMIN_EMAILS = [
-    "phil.dijon@gmail.com",  # Add admin emails here
+    "cariocaphil@gmail.com",
+    "max.joneisn@gmail.com",  # Add admin emails here
 ]
 
 # =========================
