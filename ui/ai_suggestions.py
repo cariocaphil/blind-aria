@@ -11,6 +11,10 @@ TODO: improve ranking with an actual language model scoring pass
 
 from __future__ import annotations
 
+import os
+
+import requests
+
 
 # ---------------------------------------------------------------------------
 # Query generation
@@ -45,84 +49,82 @@ def generate_search_queries(query: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# YouTube search (mock)
+# YouTube search (real API)
 # ---------------------------------------------------------------------------
+
+_YT_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
+
 
 def search_youtube(query: str) -> list[dict]:
     """
-    Search YouTube and return a list of candidate videos.
+    Call the YouTube Data API v3 /search endpoint and return structured results.
 
     Each entry: {"videoId": str, "title": str, "channel": str}
 
-    TODO: replace with real YouTube Data API v3
-          import googleapiclient.discovery
-          youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=API_KEY)
-          response = youtube.search().list(q=query, part="snippet", type="video",
-                                           maxResults=10).execute()
-          items = response.get("items", [])
-          return [{"videoId": i["id"]["videoId"],
-                   "title":   i["snippet"]["title"],
-                   "channel": i["snippet"]["channelTitle"]} for i in items]
+    Reads the API key from the environment variable YOUTUBE_API_KEY.
+    Returns an empty list (never raises) if:
+      - the key is missing
+      - the network request fails
+      - the API returns an error (e.g. quota exceeded)
 
-    TODO: add st.cache_data(ttl=3600) once real API is used
+    TODO: add caching to reduce API usage
+    TODO: increase maxResults if needed
+    TODO: support advanced filters (duration, relevance)
     """
-    # --- MOCK DATA (keyed loosely to the query so results feel relevant) ---
-    _MOCK_POOL: list[dict] = [
-        {
-            "videoId": "mock_LV_001",
-            "title": "Schumann: Dichterliebe — Lebendige Vergangenheit",
-            "channel": "Preiser Records",
-        },
-        {
-            "videoId": "mock_recital_002",
-            "title": "Schumann Die alten bösen Lieder — Live recital 1962",
-            "channel": "ClassicArchive",
-        },
-        {
-            "videoId": "mock_piano_003",
-            "title": "Die alten bösen Lieder — Piano tutorial",
-            "channel": "PianoLessonsOnline",
-        },
-        {
-            "videoId": "mock_karaoke_004",
-            "title": "Schumann Lied Karaoke backing track",
-            "channel": "KaraokeMasters",
-        },
-        {
-            "videoId": "mock_score_005",
-            "title": "Schumann sheet music score — Die alten bösen Lieder",
-            "channel": "IMSLP Scores",
-        },
-        {
-            "videoId": "mock_live_006",
-            "title": "Schumann: Die alten bösen Lieder — Dietrich Fischer-Dieskau",
-            "channel": "OperaClassica",
-        },
-        {
-            "videoId": "mock_preiser_007",
-            "title": "Schumann Lieder — Preiser Records historic recording",
-            "channel": "Preiser Records",
-        },
-        {
-            "videoId": "mock_instrumental_008",
-            "title": "Schumann — Instrumental arrangement for violin",
-            "channel": "ClassicalViolin",
-        },
-        {
-            "videoId": "mock_recital_009",
-            "title": "Die alten bösen Lieder — Recital Vienna 1971",
-            "channel": "ViennaClassics",
-        },
-        {
-            "videoId": "mock_live_010",
-            "title": "Schumann Liederabend — Live performance art song",
-            "channel": "SungWord",
-        },
-    ]
-    # In the mock we ignore the query and always return the full pool.
-    # Real API would pass `query` to the HTTP request.
-    _ = query
-    return list(_MOCK_POOL)
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    if not api_key:
+        # Surface a visible warning in the Streamlit UI without crashing.
+        # Import here to keep this module usable outside of Streamlit contexts.
+        try:
+            import streamlit as st
+            st.warning(
+                "YOUTUBE_API_KEY environment variable is not set. "
+                "YouTube suggestions are unavailable."
+            )
+        except Exception:
+            pass
+        return []
+
+    params: dict = {
+        "part": "snippet",
+        "q": query,
+        "type": "video",
+        "maxResults": 5,   # TODO: increase maxResults if needed
+        "key": api_key,
+    }
+
+    try:
+        response = requests.get(_YT_SEARCH_URL, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as exc:
+        # 403 = quota exceeded or bad key; 4xx/5xx covered generically
+        try:
+            import streamlit as st
+            st.warning(f"YouTube API error: {exc}")
+        except Exception:
+            pass
+        return []
+    except requests.RequestException:
+        # Network-level failure — fail silently so the rest of the form works
+        return []
+
+    items: list[dict] = response.json().get("items", [])
+
+    seen: set[str] = set()
+    results: list[dict] = []
+    for item in items:
+        video_id: str = item.get("id", {}).get("videoId", "")
+        if not video_id or video_id in seen:
+            continue  # skip missing or duplicate IDs
+        seen.add(video_id)
+        snippet: dict = item.get("snippet", {})
+        results.append({
+            "videoId": video_id,
+            "title":   snippet.get("title", ""),
+            "channel": snippet.get("channelTitle", ""),
+        })
+
+    return results
 
 
 # ---------------------------------------------------------------------------
