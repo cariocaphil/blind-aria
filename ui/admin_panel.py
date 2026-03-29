@@ -5,6 +5,7 @@ Allows whitelisted admins to add new works without editing JSON directly.
 
 import streamlit as st
 
+from auth import require_login_block
 from db import is_logged_in
 from strings import t
 from utils import (
@@ -169,6 +170,8 @@ def show_admin_panel():
         with st.expander(t("admin_panel_title"), expanded=False):
             if not user_is_logged_in:
                 st.info(t("admin_panel_login_required"))
+                st.markdown("---")
+                # Show login form directly in the admin panel
+                require_login_block(invited=False)
             else:
                 st.warning(t("admin_panel_not_authorized"))
-
