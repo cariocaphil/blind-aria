@@ -118,6 +118,26 @@ def show_admin_panel():
     - Preview of resulting JSON entry
     - Save button with validation
     """
+    # =========================================================================
+    # INITIALIZE ALL SESSION STATE BEFORE RENDERING ANY WIDGETS
+    # =========================================================================
+    # This must happen before any st.text_input, st.checkbox, etc. is created
+    # to avoid Streamlit's "cannot mutate session_state after widget creation" error
+    
+    if "admin_title" not in st.session_state:
+        st.session_state.admin_title = ""
+    if "admin_composer" not in st.session_state:
+        st.session_state.admin_composer = ""
+    if "admin_id" not in st.session_state:
+        st.session_state.admin_id = ""
+    if "admin_aliases" not in st.session_state:
+        st.session_state.admin_aliases = [""]
+    if "admin_videos" not in st.session_state:
+        st.session_state.admin_videos = ["", "", "", "", ""]
+    
+    # Initialize AI suggestion state
+    _init_suggestion_state()
+    
     st.divider()
     
     # Check auth status
@@ -155,10 +175,7 @@ def show_admin_panel():
                 st.markdown(f"**{t('admin_field_aliases')}**")
                 st.caption(t("admin_help_aliases"))
                 
-                # Dynamic aliases input
-                if "admin_aliases" not in st.session_state:
-                    st.session_state.admin_aliases = [""]
-                
+                # Dynamic aliases input (already initialized at top of function)
                 aliases = []
                 for idx, alias in enumerate(st.session_state.admin_aliases):
                     col_a, col_b = st.columns([8, 2])
@@ -183,7 +200,6 @@ def show_admin_panel():
             # ------------------------------------------------------------------
             # AI Suggestion widget
             # ------------------------------------------------------------------
-            _init_suggestion_state()
             _render_suggestion_ui(title=title, composer=composer)
 
             st.markdown("---")
@@ -191,9 +207,6 @@ def show_admin_panel():
             # YouTube IDs section
             st.markdown(f"**{t('admin_field_videos')}**")
             st.caption(t("admin_help_videos"))
-            
-            if "admin_videos" not in st.session_state:
-                st.session_state.admin_videos = ["", "", "", "", ""]
             
             video_ids = []
             for idx, video_id in enumerate(st.session_state.admin_videos):
@@ -262,12 +275,15 @@ def show_admin_panel():
                 
                 if success:
                     st.success(message)
-                    # Reset form
+                    # Reset form by clearing session_state values
+                    # (these were initialized at function top, so safe to clear here)
                     st.session_state.admin_title = ""
                     st.session_state.admin_composer = ""
                     st.session_state.admin_id = ""
                     st.session_state.admin_aliases = [""]
                     st.session_state.admin_videos = ["", "", "", "", ""]
+                    st.session_state.admin_suggest_results = []
+                    st.session_state.admin_suggest_selected = {}
                     st.rerun()
                 else:
                     st.error(message)
