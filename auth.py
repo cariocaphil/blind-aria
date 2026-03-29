@@ -85,6 +85,7 @@ def require_login_block(invited: bool = False) -> None:
                 except Exception as e:
                     st.error(f"Verification failed: {e}")
 
+
 def admin_login_block() -> None:
     """Display login UI block specifically for admin panel (OTP via email)."""
     st.subheader("Log in to contribute")
