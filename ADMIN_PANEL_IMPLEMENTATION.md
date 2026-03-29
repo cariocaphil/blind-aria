@@ -74,7 +74,60 @@ Added contextual login function for admin panel:
 - Reuses existing OTP verification logic but with catalogue contribution context
 - Allows non-logged-in users to log in directly within the admin panel
 
-### 5. **strings.py** (Extended)
+### 5. **ui/ai_suggestions.py** (New File)
+AI-assisted YouTube suggestion helpers for finding and ranking video candidates:
+
+**Key Functions:**
+- **generate_search_queries(query)** - Creates 3 progressively-specific search queries:
+  - Base query + "Lied"
+  - Base query + "live recital"
+  - Base query + "Lebendige Vergangenheit"
+
+- **search_youtube(query)** - Calls YouTube Data API v3 /search endpoint:
+  - Reads `YOUTUBE_API_KEY` from environment variable
+  - Returns list of dicts with videoId, title, channel
+  - Returns empty list on API errors (never crashes)
+  - Handles quota limits gracefully
+
+- **filter_candidates(videos)** - Removes noise:
+  - Filters out instrumental, piano, violin, karaoke, tutorial recordings
+  - Case-insensitive matching on title and channel
+
+- **rank_candidates(videos)** - Quality-based scoring:
+  - +3 for Lebendige Vergangenheit (classic vocal recordings)
+  - +2 for Preiser label
+  - +1 for live/recital/liederabend
+  - -2 soft penalty for instrumental terms
+  - Returns sorted list (highest score first)
+
+- **suggest_videos(query, max_results=8)** - Full pipeline:
+  - Generates search queries
+  - Fetches from YouTube
+  - Deduplicates by videoId
+  - Filters and ranks
+  - Returns top results with scores for debugging
+
+- **find_similar_works(title, composer, works)** - Duplicate detection:
+  - Uses substring matching on title and composer
+  - Checks pre-built `_search` index (covers aliases)
+  - Returns any suspiciously similar existing works
+  - TODO: Replace with fuzzy matching for robustness
+
+**Integration with admin_panel.py:**
+- User enters search query (e.g., "Schumann Die alten bösen Lieder")
+- Click "🔍 Search YouTube" button
+- Calls `suggest_videos()` to fetch and rank candidates
+- Shows checkboxes for top results (3–5 pre-selected)
+- User selects desired videos
+- Click "✓ Use selected videos" to merge IDs into form
+- Deduplicates with existing manual entries
+
+**Configuration & Requirements:**
+- Requires `YOUTUBE_API_KEY` environment variable
+- Uses YouTube Data API v3 /search endpoint (part:snippet, type:video, maxResults:5)
+- Returns gracefully if API unavailable (warning shown, form still usable)
+
+### 6. **strings.py** (Extended)
 Added 30+ new i18n strings for the admin panel:
 
 - Panel title and description
@@ -82,10 +135,11 @@ Added 30+ new i18n strings for the admin panel:
 - Button labels
 - Preview section text
 - Status/error messages
+- YouTube suggestion UI strings: `admin_suggest_query_help`, `admin_suggest_button`, `admin_suggest_loading`, etc.
 
 All strings follow the existing t(key, **kwargs) pattern for i18n support.
 
-### 5. **app.py** (Modified)
+### 7. **app.py** (Modified)
 - Imported `show_admin_panel` from `ui.admin_panel`
 - Added call to `show_admin_panel()` right after header/login checks
 - Positioned before party session or solo mode logic
@@ -150,32 +204,41 @@ Clear TODO markers in `load_catalog_file()`, `save_catalog_file()`, and config i
 
 ## Future Enhancements (Ready to Implement)
 
-1. **YouTube Search Integration**
-   - Hook into YouTube API in `add_work_to_catalog()` 
-   - Auto-suggest video IDs from search
+1. **✅ YouTube Search Integration** (IMPLEMENTED)
+   - `suggest_videos()` finds and ranks YouTube candidates
+   - Auto-suggests top 5 results via YouTube API v3
+   - Integrated into admin panel UI with checkboxes
+   - Scoring prioritizes vocal recordings (Lebendige Vergangenheit, Preiser)
 
-2. **AI-Assisted Metadata**
-   - Parse free-text query for metadata inference
-   - Suggest aliases based on work data
+2. **AI-Assisted Metadata** (Partially Ready)
+   - `find_similar_works()` detects duplicates by substring matching
+   - TODO: Upgrade to fuzzy matching (e.g. rapidfuzz) for robustness
+   - Future: Parse query to infer title/composer automatically
 
 3. **Database Migration**
    - Replace `load_catalog_file()` and `save_catalog_file()` with Supabase calls
+   - Clear TODO markers in utils.py for integration point
    - No other code needs changes due to clear abstraction
 
-4. **Bulk Import**
+4. **Caching for YouTube API**
+   - Add `@st.cache_data` decorator to `search_youtube()`
+   - Reduce API quota usage for repeated searches
+   - TODO comment in ai_suggestions.py
+
+5. **Bulk Import**
    - CSV/JSON upload support
    - Batch validation before save
 
-5. **Admin Dashboard**
-   - Statistics on catalogue
-   - Recently added works
-   - Review/approve workflow
+6. **Admin Dashboard**
+   - Statistics on catalogue size
+   - Recently added works timeline
+   - Review/approve workflow for contributed works
 
 ## Code Statistics
 
-- **New files**: 1 (ui/admin_panel.py, 152 lines)
-- **Modified files**: 4 (config.py, utils.py, strings.py, app.py)
-- **New functions**: 8 in utils.py + 1 in ui/admin_panel.py
-- **New i18n strings**: 30+
-- **Total additions**: ~400 lines (including docs and whitespace)
+- **New files**: 2 (ui/admin_panel.py, ui/ai_suggestions.py)
+- **Modified files**: 5 (config.py, utils.py, strings.py, auth.py, app.py)
+- **New functions**: 8 in utils.py + 6 in ui/ai_suggestions.py + 1 in auth.py + 1 in ui/admin_panel.py
+- **New i18n strings**: 40+
+- **Total additions**: ~800 lines (code + docs)
 - **Breaking changes**: 0

@@ -11,7 +11,94 @@ from strings import t
 from utils import (
     is_admin_user,
     add_work_to_catalog,
+    load_catalog,
 )
+from ui.ai_suggestions import suggest_videos, find_similar_works
+
+
+def _init_suggestion_state() -> None:
+    """Initialise session-state keys used by the AI suggestion widget."""
+    if "admin_suggest_results" not in st.session_state:
+        st.session_state.admin_suggest_results = []   # list[dict] from suggest_videos()
+    if "admin_suggest_selected" not in st.session_state:
+        st.session_state.admin_suggest_selected = {}  # {videoId: bool}
+
+
+def _render_suggestion_ui(title: str, composer: str) -> None:
+    """
+    Render the AI suggestion sub-panel.
+
+    Reads/writes:
+      st.session_state.admin_suggest_results   — cached pipeline output
+      st.session_state.admin_suggest_selected  — checkbox state per videoId
+      st.session_state.admin_videos            — the main form's video-ID list
+    """
+    st.markdown("---")
+    st.markdown("**✨ AI-Assisted YouTube Suggestions** *(optional)*")
+
+    # --- Query input (defaults to "Composer Title" if form fields are filled) ---
+    default_query = " ".join(filter(None, [composer.strip(), title.strip()]))
+    suggest_query = st.text_input(
+        t("admin_suggest_query_label"),
+        value=default_query,
+        key="admin_suggest_query",
+        help=t("admin_suggest_query_help"),
+        placeholder="e.g. Schumann Die alten bösen Lieder",
+    )
+
+    if st.button(t("admin_suggest_button"), key="admin_suggest_run"):
+        if not suggest_query.strip():
+            st.warning("Enter a search query first.")
+        else:
+            with st.spinner(t("admin_suggest_loading")):
+                results = suggest_videos(suggest_query.strip())
+            st.session_state.admin_suggest_results = results
+            # Pre-select the top 3–5 results
+            st.session_state.admin_suggest_selected = {
+                v["videoId"]: (i < 4)
+                for i, v in enumerate(results)
+            }
+
+    results: list[dict] = st.session_state.admin_suggest_results
+
+    if not results:
+        return  # Nothing to show yet
+
+    # --- Show results as checkboxes ---
+    st.caption(t("admin_suggest_results_label"))
+
+    if not results:
+        st.info(t("admin_suggest_none_found"))
+        return
+
+    for video in results:
+        vid_id = video["videoId"]
+        label = f"{video['title']}  —  *{video['channel']}*"
+        checked = st.session_state.admin_suggest_selected.get(vid_id, False)
+        new_val = st.checkbox(label, value=checked, key=f"admin_suggest_cb_{vid_id}")
+        st.session_state.admin_suggest_selected[vid_id] = new_val
+
+    # --- Apply selection button ---
+    if st.button(t("admin_suggest_use_button"), key="admin_suggest_apply"):
+        chosen = [
+            vid_id
+            for vid_id, selected in st.session_state.admin_suggest_selected.items()
+            if selected
+        ]
+        if not chosen:
+            st.warning(t("admin_suggest_no_selection"))
+        else:
+            # Merge into the existing admin_videos list, avoiding duplicates
+            existing = [v for v in st.session_state.admin_videos if v.strip()]
+            for vid_id in chosen:
+                if vid_id not in existing:
+                    existing.append(vid_id)
+            # Pad back to at least 5 slots so the manual form looks normal
+            while len(existing) < 5:
+                existing.append("")
+            st.session_state.admin_videos = existing
+            st.success(t("admin_suggest_added", n=len(chosen)))
+            st.rerun()
 
 
 def show_admin_panel():
@@ -21,11 +108,13 @@ def show_admin_panel():
     Always shown to indicate the feature exists.
     - If not logged in: shows login prompt
     - If logged in but not admin: shows "admin only" message
-    - If logged in and admin: shows full form
-    
+    - If logged in and admin: shows full form + optional AI suggestions
+
     UI flow:
     - Title and description
     - Form fields: title, composer, id, aliases, YouTube IDs
+    - AI suggestion widget (optional, does not block manual workflow)
+    - Duplicate warning (if similar work detected)
     - Preview of resulting JSON entry
     - Save button with validation
     """
@@ -91,6 +180,12 @@ def show_admin_panel():
                     st.session_state.admin_aliases.append("")
                     st.rerun()
             
+            # ------------------------------------------------------------------
+            # AI Suggestion widget
+            # ------------------------------------------------------------------
+            _init_suggestion_state()
+            _render_suggestion_ui(title=title, composer=composer)
+
             st.markdown("---")
             
             # YouTube IDs section
@@ -122,6 +217,20 @@ def show_admin_panel():
                 st.session_state.admin_videos.append("")
                 st.rerun()
             
+            # ------------------------------------------------------------------
+            # Duplicate detection warning
+            # ------------------------------------------------------------------
+            if title.strip() or composer.strip():
+                existing_works = load_catalog()
+                similar = find_similar_works(title, composer, existing_works)
+                if similar:
+                    st.warning(t("admin_duplicate_warning"))
+                    for w in similar[:3]:  # cap at 3 to avoid wall-of-text
+                        st.markdown(
+                            f"- **{w['title']}** — {w.get('composer', '?')} "
+                            f"(`{w['id']}`)"
+                        )
+
             st.markdown("---")
             
             # Preview section
