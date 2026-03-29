@@ -314,7 +314,42 @@ st.session_state.admin_composer    # str
 st.session_state.admin_id          # str
 st.session_state.admin_aliases     # list[str]
 st.session_state.admin_videos      # list[str]
+st.session_state.admin_suggest_results    # list[dict] (AI suggestions)
+st.session_state.admin_suggest_selected   # dict[str, bool] (checkbox state)
 ```
+
+### Initialization Pattern
+
+**Critical**: All session_state keys must be initialized BEFORE any widgets are created:
+
+```python
+def show_admin_panel():
+    # ✅ Initialize ALL state at function entry
+    if "admin_title" not in st.session_state:
+        st.session_state.admin_title = ""
+    # ... more keys ...
+    _init_suggestion_state()  # AI suggestion state
+    
+    # ❌ THEN create widgets (now safe, keys already exist)
+    title = st.text_input(..., key="admin_title")
+```
+
+**Why**: Streamlit forbids modifying `st.session_state` values that are already bound to widgets. Initializing upfront prevents this error.
+
+### Form Reset Pattern
+
+On successful save, use `.pop()` instead of direct assignment:
+
+```python
+# ❌ Wrong - causes "cannot modify widget-bound session_state" error
+st.session_state.admin_title = ""
+
+# ✅ Correct - removes key, allows fresh initialization on next render
+st.session_state.pop("admin_title", None)
+st.rerun()  # Triggers new render with initialization check
+```
+
+**Why**: `.pop()` removes the key entirely, so the initialization check runs again on the next render, creating a fresh key with default values.
 
 **Design**: Each field resets after successful save, allowing rapid entry of multiple works.
 

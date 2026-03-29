@@ -275,15 +275,15 @@ def show_admin_panel():
                 
                 if success:
                     st.success(message)
-                    # Reset form by clearing session_state values
-                    # (these were initialized at function top, so safe to clear here)
-                    st.session_state.admin_title = ""
-                    st.session_state.admin_composer = ""
-                    st.session_state.admin_id = ""
-                    st.session_state.admin_aliases = [""]
-                    st.session_state.admin_videos = ["", "", "", "", ""]
-                    st.session_state.admin_suggest_results = []
-                    st.session_state.admin_suggest_selected = {}
+                    # Reset form by removing session_state keys before rerun
+                    # Using .pop() instead of assignment to avoid "cannot modify widget" error
+                    st.session_state.pop("admin_title", None)
+                    st.session_state.pop("admin_composer", None)
+                    st.session_state.pop("admin_id", None)
+                    st.session_state.pop("admin_aliases", None)
+                    st.session_state.pop("admin_videos", None)
+                    st.session_state.pop("admin_suggest_results", None)
+                    st.session_state.pop("admin_suggest_selected", None)
                     st.rerun()
                 else:
                     st.error(message)
